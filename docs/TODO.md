@@ -135,11 +135,136 @@ Select and implement one or more deployment methods:
 - Set up scaling policies
 - Configure auto-healing
 
-**Option D: Cloud Platforms**
-- AWS: EC2, ECS, RDS, Elastic Beanstalk
-- Google Cloud: Cloud Run, App Engine, Cloud SQL
-- Azure: App Service, Azure Container Instances
-- Cloud-native features: auto-scaling, monitoring, backups
+**Option D: AWS Cloud Platform**
+
+Deploy using multiple AWS services for scalability and reliability:
+
+**D1. AWS EC2 - JAR Deployment**
+- Launch EC2 instance (t3.medium or larger)
+- Install Java 17 and Maven
+- Deploy application JAR with systemd service
+- Configure security groups and IAM roles
+- Set up auto-scaling group for multiple instances
+- Use Application Load Balancer (ALB) for traffic distribution
+- Enable CloudWatch monitoring and logs
+
+**D2. AWS ECS - Docker Container Orchestration**
+- Push Docker image to AWS ECR (Elastic Container Registry)
+- Create ECS cluster and task definitions
+- Configure container networking and volumes
+- Set up ECS services with auto-scaling
+- Use Application Load Balancer (ALB) for service discovery
+- Enable CloudWatch container insights
+- Configure rolling deployments and blue-green deployments
+
+**D3. Amazon EKS - Kubernetes Orchestration**
+- Create EKS cluster with managed nodes
+- Push Docker image to AWS ECR
+- Create Kubernetes manifests:
+  - Deployment with replicas
+  - Service (LoadBalancer type)
+  - ConfigMap for application configuration
+  - Secrets for sensitive data
+  - HorizontalPodAutoscaler for auto-scaling
+- Deploy application using kubectl or Helm
+- Set up EKS monitoring with CloudWatch Container Insights
+- Configure ingress controller for advanced routing
+
+**D4. AWS RDS - PostgreSQL Database Migration**
+- Create RDS PostgreSQL instance:
+  - Multi-AZ deployment for high availability
+  - Automated backups (35-day retention)
+  - Point-in-time recovery enabled
+  - Enhanced monitoring
+- Migrate database from local PostgreSQL:
+  - Use AWS Database Migration Service (DMS) or pg_dump
+  - Create database and schemas in RDS
+  - Import incident data and setup
+- Update application configuration:
+  - Update JDBC URL to RDS endpoint
+  - Update security groups for database access
+  - Test connectivity from application
+- Set up parameter groups and backup windows
+- Enable Performance Insights for query monitoring
+
+**D5. AWS Lambda - Automated Tasks & Scripts**
+- Create Lambda functions for:
+  - Database maintenance tasks (backups, cleanup)
+  - Scheduled incident notifications
+  - Data archival (move old CLOSED incidents)
+  - Report generation and email delivery
+  - Health checks and alerting
+- Trigger Lambda functions via:
+  - CloudWatch Events (scheduled)
+  - SNS notifications (event-driven)
+  - API Gateway (on-demand)
+  - DynamoDB Streams (data changes)
+- Package Python scripts as Lambda layers
+- Configure IAM roles for RDS and SNS access
+- Monitor execution via CloudWatch Logs
+
+**D6. AWS CloudWatch - Monitoring & Observability**
+- Application Performance Monitoring:
+  - Monitor application logs from EC2/ECS/EKS
+  - Track request latency and error rates
+  - Monitor JVM metrics (heap, threads, GC)
+  - Track API response times and throughput
+- Infrastructure Monitoring:
+  - EC2 instance CPU, memory, disk usage
+  - ECS container metrics
+  - EKS pod and node metrics
+  - RDS database metrics (connections, query performance)
+- Create CloudWatch Dashboards:
+  - Real-time application metrics
+  - Database performance overview
+  - Error rate and latency trends
+  - Business metrics (incident counts by status)
+- Set up CloudWatch Alarms:
+  - High CPU/memory alerts
+  - Database connection pool warnings
+  - API error rate thresholds
+  - Slow query detection
+  - Application availability checks
+- Configure log aggregation:
+  - Application logs to CloudWatch Logs
+  - Database slow query logs
+  - ALB access logs
+  - VPC Flow Logs
+
+**D7. AWS CloudFront - CDN & Application Monitoring**
+- Set up CloudFront distribution:
+  - Origin: Application Load Balancer or EKS service
+  - Caching policies for static content
+  - HTTPS/TLS termination at edge
+  - Geo-restriction (if needed)
+- Enable CloudFront monitoring:
+  - Request metrics and cache statistics
+  - Error rate tracking
+  - Performance analytics
+  - Geographic request distribution
+- Configure CloudFront access logs:
+  - Send logs to S3 bucket
+  - Analyze traffic patterns
+  - Monitor unauthorized access attempts
+- Set up CloudFront caching for:
+  - API responses (with short TTL)
+  - Static Swagger UI content
+  - GraphQL introspection queries
+- Use AWS WAF with CloudFront:
+  - Protect against DDoS attacks
+  - Rate limiting
+  - SQL injection prevention
+  - Bot protection
+
+**Integration & Architecture**:
+- Application tier: EC2 + ECS + EKS (choose one or multi-tier)
+- Database tier: AWS RDS PostgreSQL (replacement for local DB)
+- Load balancing: AWS ALB or Network Load Balancer (NLB)
+- Automation: AWS Lambda for background tasks
+- Monitoring: AWS CloudWatch (unified dashboard)
+- Content delivery: AWS CloudFront with WAF
+- Networking: VPC, subnets, security groups, NAT gateway
+- Storage: S3 for backups and Lambda function code
 
 **Deliverables**:
 - Deployment scripts
