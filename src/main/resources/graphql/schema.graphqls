@@ -1,0 +1,76 @@
+type Query {
+    "Retrieve all incidents"
+    incidents: [Incident!]!
+
+    "Get a specific incident by ID"
+    incident(id: ID!): Incident
+
+    "Filter incidents by status"
+    incidentsByStatus(status: Status!): [Incident!]!
+
+    "Filter incidents by priority"
+    incidentsByPriority(priority: Priority!): [Incident!]!
+
+    "Get incidents assigned to a specific person"
+    incidentsByAssignee(assignee: String!): [Incident!]!
+}
+
+type Mutation {
+    "Create a new incident"
+    createIncident(input: CreateIncidentInput!): Incident!
+
+    "Update an existing incident (all fields)"
+    updateIncident(id: ID!, input: UpdateIncidentInput!): Incident!
+
+    "Update only the status of an incident"
+    updateStatus(id: ID!, status: Status!): Incident!
+
+    "Delete an incident"
+    deleteIncident(id: ID!): Boolean!
+}
+
+"Incident entity representing a tracked issue or task"
+type Incident {
+    id: ID!
+    title: String!
+    description: String
+    priority: Priority!
+    status: Status!
+    assignee: String
+    createdAt: String!
+    updatedAt: String!
+    resolvedAt: String
+}
+
+"Priority levels for incidents"
+enum Priority {
+    LOW
+    MEDIUM
+    HIGH
+    CRITICAL
+}
+
+"Lifecycle status of an incident"
+enum Status {
+    OPEN
+    IN_PROGRESS
+    RESOLVED
+    CLOSED
+}
+
+"Input type for creating a new incident"
+input CreateIncidentInput {
+    title: String!
+    description: String
+    priority: Priority
+    assignee: String
+}
+
+"Input type for updating an existing incident"
+input UpdateIncidentInput {
+    title: String
+    description: String
+    priority: Priority
+    status: Status
+    assignee: String
+}
