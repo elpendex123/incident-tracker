@@ -1,0 +1,110 @@
+pipeline {
+    agent any
+
+    parameters {
+        choice(
+            name: 'ACTION',
+            choices: ['query', 'seed', 'cleanup', 'report'],
+            description: 'Database operation to perform'
+        )
+
+        choice(
+            name: 'QUERY_TYPE',
+            choices: ['counts', 'priority', 'open', 'overdue'],
+            description: 'Query type (used when ACTION=query)'
+        )
+
+        string(
+            name: 'SEED_COUNT',
+            defaultValue: '10',
+            description: 'Number of incidents to seed (used when ACTION=seed)'
+        )
+
+        string(
+            name: 'CLEANUP_DAYS',
+            defaultValue: '30',
+            description: 'Number of days for cleanup (used when ACTION=cleanup)'
+        )
+
+        string(
+            name: 'REPORT_OUTPUT',
+            defaultValue: 'incident_report.txt',
+            description: 'Output file for report (used when ACTION=report)'
+        )
+    }
+
+    environment {
+        DB_HOST = 'localhost'
+        DB_PORT = '5432'
+        DB_NAME = 'incidents'
+        DB_USER = 'postgres'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo '=== Checking out source code ==='
+                checkout scm
+            }
+        }
+
+        stage('Setup Python') {
+            steps {
+                echo '=== Installing Python dependencies ==='
+                sh '''
+                    cd scripts
+                    python3 -m pip install --user -r requirements.txt
+                '''
+            }
+        }
+
+        stage('Run Database Operation') {
+            steps {
+                echo "=== Running database operation: ${params.ACTION} ==="
+
+                script {
+                    withCredentials([string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
+                        def command = "cd scripts && python3 db_operations.py --action ${params.ACTION}"
+
+                        if (params.ACTION == 'query') {
+                            command += " --query ${params.QUERY_TYPE}"
+                        } else if (params.ACTION == 'seed') {
+                            command += " --count ${params.SEED_COUNT}"
+                        } else if (params.ACTION == 'cleanup') {
+                            command += " --days ${params.CLEANUP_DAYS}"
+                        } else if (params.ACTION == 'report') {
+                            command += " --output ${params.REPORT_OUTPUT}"
+                        }
+
+                        echo "Executing: ${command}"
+                        sh command
+                    }
+                }
+            }
+        }
+
+        stage('Archive Report') {
+            when {
+                expression { params.ACTION == 'report' }
+            }
+            steps {
+                echo '=== Archiving report ==='
+                archiveArtifacts artifacts: "scripts/${params.REPORT_OUTPUT}", fingerprint: true, allowEmptyArchive: true
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✓ Database operation '${params.ACTION}' completed successfully!"
+        }
+
+        failure {
+            echo "✗ Database operation '${params.ACTION}' failed!"
+        }
+
+        always {
+            echo '=== Pipeline execution finished ==='
+        }
+    }
+}
