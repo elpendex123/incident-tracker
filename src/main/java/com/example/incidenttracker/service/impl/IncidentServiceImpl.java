@@ -89,7 +89,11 @@ public class IncidentServiceImpl implements IncidentService {
         Incident incident = getIncidentById(id);
         incident.setStatus(status);
 
-        // Note: resolvedAt will be set by @PreUpdate hook if status is RESOLVED
+        // Set resolvedAt when status changes to RESOLVED
+        if (status == Status.RESOLVED && incident.getResolvedAt() == null) {
+            incident.setResolvedAt(LocalDateTime.now());
+        }
+
         return incidentRepository.save(incident);
     }
 

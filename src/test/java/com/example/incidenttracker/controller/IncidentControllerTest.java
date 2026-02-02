@@ -362,7 +362,7 @@ class IncidentControllerTest {
                 .andExpect(jsonPath("$.status").exists())
                 .andExpect(jsonPath("$.assignee").exists())
                 .andExpect(jsonPath("$.createdAt").exists())
-                .andExpect(jsonPath("$.updatedAt").exists())
-                .andExpect(jsonPath("$.resolvedAt").exists());
+                .andExpect(jsonPath("$.updatedAt").exists());
+        // Note: resolvedAt is optional and only set when status is RESOLVED
     }
 }

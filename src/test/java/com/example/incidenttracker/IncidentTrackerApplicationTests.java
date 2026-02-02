@@ -95,8 +95,8 @@ class IncidentTrackerApplicationTests {
 
     @Test
     void testHibernateDialectConfigured() {
-        // Verify Hibernate dialect for H2
-        String dialect = applicationContext.getEnvironment().getProperty("spring.jpa.properties.hibernate.dialect");
+        // Verify Hibernate dialect (H2 for test profile)
+        String dialect = applicationContext.getEnvironment().getProperty("spring.jpa.database-platform");
         assertThat(dialect).contains("H2Dialect");
     }
 }

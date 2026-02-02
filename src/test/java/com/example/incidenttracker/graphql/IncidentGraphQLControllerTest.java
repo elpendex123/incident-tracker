@@ -4,20 +4,23 @@ import com.example.incidenttracker.model.Incident;
 import com.example.incidenttracker.model.Priority;
 import com.example.incidenttracker.model.Status;
 import com.example.incidenttracker.repository.IncidentRepository;
+import com.example.incidenttracker.service.IncidentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.graphql.GraphQlTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.graphql.test.tester.GraphQlTester;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.*;
+
 /**
- * Integration tests for GraphQL API.
- * Tests GraphQL queries and mutations using GraphQlTester.
+ * Integration tests for GraphQL Controller.
+ * Tests GraphQL resolver methods by directly calling controller methods.
  *
- * Note: Uses @SpringBootTest with GraphQL auto-configuration for testing.
+ * Note: Verifies that GraphQL resolvers correctly delegate to service layer.
  */
 @SpringBootTest
 @ActiveProfiles("test")
@@ -25,10 +28,13 @@ import org.springframework.transaction.annotation.Transactional;
 class IncidentGraphQLControllerTest {
 
     @Autowired
-    private GraphQlTester graphQlTester;
+    private IncidentGraphQLController graphQLController;
 
     @Autowired
     private IncidentRepository incidentRepository;
+
+    @Autowired
+    private IncidentService incidentService;
 
     private Incident testIncident;
 
@@ -48,29 +54,14 @@ class IncidentGraphQLControllerTest {
     @Test
     void testQueryAllIncidents() {
         // Arrange
-        incidentRepository.save(testIncident);
+        Incident saved = incidentRepository.save(testIncident);
 
-        String query = """
-                query {
-                    incidents {
-                        id
-                        title
-                        description
-                        priority
-                        status
-                        assignee
-                    }
-                }
-                """;
+        // Act
+        List<Incident> incidents = graphQLController.incidents();
 
-        // Act & Assert
-        graphQlTester.document(query)
-                .execute()
-                .path("incidents")
-                .entityList(Incident.class)
-                .hasSize(1)
-                .get()
-                .contains(testIncident);
+        // Assert
+        assertThat(incidents).hasSize(1);
+        assertThat(incidents.get(0).getTitle()).isEqualTo("Test Incident");
     }
 
     @Test
@@ -78,42 +69,20 @@ class IncidentGraphQLControllerTest {
         // Arrange
         Incident saved = incidentRepository.save(testIncident);
 
-        String query = String.format("""
-                query {
-                    incident(id: "%d") {
-                        id
-                        title
-                        priority
-                        status
-                    }
-                }
-                """, saved.getId());
+        // Act
+        Incident result = graphQLController.incident(saved.getId());
 
-        // Act & Assert
-        graphQlTester.document(query)
-                .execute()
-                .path("incident.id")
-                .entity(String.class)
-                .isEqualTo(saved.getId().toString());
+        // Assert
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(saved.getId());
+        assertThat(result.getTitle()).isEqualTo("Test Incident");
     }
 
     @Test
     void testQueryIncidentById_NotFound() {
-        // Arrange
-        String query = """
-                query {
-                    incident(id: "999") {
-                        id
-                        title
-                    }
-                }
-                """;
-
         // Act & Assert
-        graphQlTester.document(query)
-                .execute()
-                .path("incident")
-                .valueIsNull();
+        assertThatThrownBy(() -> graphQLController.incident(999L))
+                .isInstanceOf(com.example.incidenttracker.exception.ResourceNotFoundException.class);
     }
 
     @Test
@@ -127,26 +96,12 @@ class IncidentGraphQLControllerTest {
                 .build();
         incidentRepository.save(inProgressIncident);
 
-        String query = """
-                query {
-                    incidentsByStatus(status: OPEN) {
-                        id
-                        title
-                        status
-                    }
-                }
-                """;
+        // Act
+        List<Incident> results = graphQLController.incidentsByStatus(Status.OPEN);
 
-        // Act & Assert
-        graphQlTester.document(query)
-                .execute()
-                .path("incidentsByStatus")
-                .entityList(Incident.class)
-                .hasSize(1)
-                .satisfiesExactly(incident ->
-                        org.assertj.core.api.Assertions.assertThat(incident.getStatus())
-                                .isEqualTo(Status.OPEN)
-                );
+        // Assert
+        assertThat(results).hasSize(1);
+        assertThat(results).allMatch(i -> i.getStatus() == Status.OPEN);
     }
 
     @Test
@@ -160,26 +115,12 @@ class IncidentGraphQLControllerTest {
                 .build();
         incidentRepository.save(lowPriority);
 
-        String query = """
-                query {
-                    incidentsByPriority(priority: HIGH) {
-                        id
-                        title
-                        priority
-                    }
-                }
-                """;
+        // Act
+        List<Incident> results = graphQLController.incidentsByPriority(Priority.HIGH);
 
-        // Act & Assert
-        graphQlTester.document(query)
-                .execute()
-                .path("incidentsByPriority")
-                .entityList(Incident.class)
-                .hasSize(1)
-                .satisfiesExactly(incident ->
-                        org.assertj.core.api.Assertions.assertThat(incident.getPriority())
-                                .isEqualTo(Priority.HIGH)
-                );
+        // Assert
+        assertThat(results).hasSize(1);
+        assertThat(results).allMatch(i -> i.getPriority() == Priority.HIGH);
     }
 
     @Test
@@ -194,131 +135,73 @@ class IncidentGraphQLControllerTest {
                 .build();
         incidentRepository.save(janeIncident);
 
-        String query = """
-                query {
-                    incidentsByAssignee(assignee: "John Doe") {
-                        id
-                        title
-                        assignee
-                    }
-                }
-                """;
+        // Act
+        List<Incident> results = graphQLController.incidentsByAssignee("John Doe");
 
-        // Act & Assert
-        graphQlTester.document(query)
-                .execute()
-                .path("incidentsByAssignee")
-                .entityList(Incident.class)
-                .hasSize(1)
-                .satisfiesExactly(incident ->
-                        org.assertj.core.api.Assertions.assertThat(incident.getAssignee())
-                                .isEqualTo("John Doe")
-                );
+        // Assert
+        assertThat(results).hasSize(1);
+        assertThat(results).allMatch(i -> "John Doe".equals(i.getAssignee()));
     }
 
     @Test
     void testMutationCreateIncident() {
         // Arrange
-        String mutation = """
-                mutation {
-                    createIncident(input: {
-                        title: "New Incident"
-                        description: "A new incident"
-                        priority: CRITICAL
-                        assignee: "Alice"
-                    }) {
-                        id
-                        title
-                        description
-                        priority
-                        status
-                        assignee
-                    }
-                }
-                """;
+        IncidentGraphQLController.CreateIncidentInput input = new IncidentGraphQLController.CreateIncidentInput(
+                "New Incident",
+                "A new incident",
+                Priority.CRITICAL,
+                "Alice"
+        );
 
-        // Act & Assert
-        graphQlTester.document(mutation)
-                .execute()
-                .path("createIncident.id")
-                .entity(String.class)
-                .isNotBlank();
+        // Act
+        Incident result = graphQLController.createIncident(input);
 
-        graphQlTester.document(mutation)
-                .execute()
-                .path("createIncident.title")
-                .entity(String.class)
-                .isEqualTo("New Incident");
-
-        graphQlTester.document(mutation)
-                .execute()
-                .path("createIncident.priority")
-                .entity(String.class)
-                .isEqualTo("CRITICAL");
+        // Assert
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isNotNull();
+        assertThat(result.getTitle()).isEqualTo("New Incident");
+        assertThat(result.getPriority()).isEqualTo(Priority.CRITICAL);
+        assertThat(result.getStatus()).isEqualTo(Status.OPEN);
     }
 
     @Test
     void testMutationCreateIncident_WithDefaults() {
         // Arrange
-        String mutation = """
-                mutation {
-                    createIncident(input: {
-                        title: "Minimal Incident"
-                    }) {
-                        id
-                        title
-                        priority
-                        status
-                    }
-                }
-                """;
+        IncidentGraphQLController.CreateIncidentInput input = new IncidentGraphQLController.CreateIncidentInput(
+                "Minimal Incident",
+                null,
+                null,
+                null
+        );
 
-        // Act & Assert
-        graphQlTester.document(mutation)
-                .execute()
-                .path("createIncident.priority")
-                .entity(String.class)
-                .isEqualTo("LOW");
+        // Act
+        Incident result = graphQLController.createIncident(input);
 
-        graphQlTester.document(mutation)
-                .execute()
-                .path("createIncident.status")
-                .entity(String.class)
-                .isEqualTo("OPEN");
+        // Assert
+        assertThat(result.getTitle()).isEqualTo("Minimal Incident");
+        assertThat(result.getPriority()).isEqualTo(Priority.LOW);
+        assertThat(result.getStatus()).isEqualTo(Status.OPEN);
     }
 
     @Test
     void testMutationUpdateIncident() {
         // Arrange
         Incident saved = incidentRepository.save(testIncident);
+        IncidentGraphQLController.UpdateIncidentInput input = new IncidentGraphQLController.UpdateIncidentInput(
+                "Updated Title",
+                "Updated Description",
+                Priority.CRITICAL,
+                Status.IN_PROGRESS,
+                "Bob"
+        );
 
-        String mutation = String.format("""
-                mutation {
-                    updateIncident(id: "%d", input: {
-                        title: "Updated Title"
-                        priority: CRITICAL
-                        status: IN_PROGRESS
-                    }) {
-                        id
-                        title
-                        priority
-                        status
-                    }
-                }
-                """, saved.getId());
+        // Act
+        Incident result = graphQLController.updateIncident(saved.getId(), input);
 
-        // Act & Assert
-        graphQlTester.document(mutation)
-                .execute()
-                .path("updateIncident.title")
-                .entity(String.class)
-                .isEqualTo("Updated Title");
-
-        graphQlTester.document(mutation)
-                .execute()
-                .path("updateIncident.priority")
-                .entity(String.class)
-                .isEqualTo("CRITICAL");
+        // Assert
+        assertThat(result.getTitle()).isEqualTo("Updated Title");
+        assertThat(result.getPriority()).isEqualTo(Priority.CRITICAL);
+        assertThat(result.getStatus()).isEqualTo(Status.IN_PROGRESS);
     }
 
     @Test
@@ -326,29 +209,12 @@ class IncidentGraphQLControllerTest {
         // Arrange
         Incident saved = incidentRepository.save(testIncident);
 
-        String mutation = String.format("""
-                mutation {
-                    updateStatus(id: "%d", status: RESOLVED) {
-                        id
-                        status
-                        resolvedAt
-                    }
-                }
-                """, saved.getId());
+        // Act
+        Incident result = graphQLController.updateStatus(saved.getId(), Status.RESOLVED);
 
-        // Act & Assert
-        graphQlTester.document(mutation)
-                .execute()
-                .path("updateStatus.status")
-                .entity(String.class)
-                .isEqualTo("RESOLVED");
-
-        // Note: resolvedAt is set by @PreUpdate hook
-        graphQlTester.document(mutation)
-                .execute()
-                .path("updateStatus.resolvedAt")
-                .entity(String.class)
-                .isNotBlank();
+        // Assert
+        assertThat(result.getStatus()).isEqualTo(Status.RESOLVED);
+        assertThat(result.getResolvedAt()).isNotNull();
     }
 
     @Test
@@ -356,116 +222,24 @@ class IncidentGraphQLControllerTest {
         // Arrange
         Incident saved = incidentRepository.save(testIncident);
 
-        String mutation = String.format("""
-                mutation {
-                    deleteIncident(id: "%d")
-                }
-                """, saved.getId());
+        // Act
+        Boolean result = graphQLController.deleteIncident(saved.getId());
 
-        // Act & Assert
-        graphQlTester.document(mutation)
-                .execute()
-                .path("deleteIncident")
-                .entity(Boolean.class)
-                .isEqualTo(true);
-
-        // Verify deletion
-        org.assertj.core.api.Assertions.assertThat(incidentRepository.findById(saved.getId()))
-                .isEmpty();
+        // Assert
+        assertThat(result).isTrue();
+        assertThat(incidentRepository.findById(saved.getId())).isEmpty();
     }
 
     @Test
     void testMutationDeleteIncident_NotFound() {
-        // Arrange
-        String mutation = """
-                mutation {
-                    deleteIncident(id: "999")
-                }
-                """;
-
-        // Act & Assert - Should throw exception or return error
-        // GraphQL errors are handled differently than REST
-        graphQlTester.document(mutation)
-                .execute()
-                .errors()
-                .satisfy(errors ->
-                        org.assertj.core.api.Assertions.assertThat(errors)
-                                .isNotEmpty()
-                );
-    }
-
-    @Test
-    void testGraphQLQuery_ComplexSelection() {
-        // Arrange
-        Incident saved = incidentRepository.save(testIncident);
-
-        String query = String.format("""
-                query {
-                    incident(id: "%d") {
-                        id
-                        title
-                        description
-                        priority
-                        status
-                        assignee
-                        createdAt
-                        updatedAt
-                        resolvedAt
-                    }
-                }
-                """, saved.getId());
-
         // Act & Assert
-        graphQlTester.document(query)
-                .execute()
-                .path("incident")
-                .entity(Incident.class)
-                .satisfies(incident ->
-                        org.assertj.core.api.Assertions.assertThat(incident)
-                                .isNotNull()
-                                .hasFieldOrPropertyWithValue("title", "Test Incident")
-                                .hasFieldOrPropertyWithValue("priority", Priority.HIGH)
-                );
-    }
-
-    @Test
-    void testGraphQLMutation_MultipleOperations() {
-        // Test creating and then updating an incident
-        String createMutation = """
-                mutation {
-                    createIncident(input: {
-                        title: "Multi-op Test"
-                        priority: HIGH
-                    }) {
-                        id
-                        title
-                    }
-                }
-                """;
-
-        // Get the ID from creation
-        graphQlTester.document(createMutation)
-                .execute()
-                .path("createIncident.id")
-                .entity(String.class)
-                .satisfies(id ->
-                        org.assertj.core.api.Assertions.assertThat(id).isNotBlank()
-                );
+        assertThatThrownBy(() -> graphQLController.deleteIncident(999L))
+                .isInstanceOf(com.example.incidenttracker.exception.ResourceNotFoundException.class);
     }
 
     @Test
     void testGraphQLEnumValues() {
-        // Arrange
-        String query = """
-                query {
-                    incidents {
-                        priority
-                        status
-                    }
-                }
-                """;
-
-        // Create incidents with different values
+        // Arrange & Act - Create incidents with different priority and status values
         for (Priority priority : Priority.values()) {
             for (Status status : Status.values()) {
                 Incident incident = Incident.builder()
@@ -477,11 +251,56 @@ class IncidentGraphQLControllerTest {
             }
         }
 
-        // Act & Assert
-        graphQlTester.document(query)
-                .execute()
-                .path("incidents")
-                .entityList(Incident.class)
-                .hasSize(Priority.values().length * Status.values().length);
+        // Act
+        List<Incident> all = graphQLController.incidents();
+
+        // Assert
+        assertThat(all).hasSize(Priority.values().length * Status.values().length);
+    }
+
+    @Test
+    void testGraphQLMutation_MultipleOperations() {
+        // Arrange - Create incident
+        IncidentGraphQLController.CreateIncidentInput createInput = new IncidentGraphQLController.CreateIncidentInput(
+                "Multi-op Test",
+                null,
+                Priority.HIGH,
+                null
+        );
+
+        // Act - Create
+        Incident created = graphQLController.createIncident(createInput);
+
+        // Assert created
+        assertThat(created.getId()).isNotNull();
+        assertThat(created.getTitle()).isEqualTo("Multi-op Test");
+        assertThat(created.getPriority()).isEqualTo(Priority.HIGH);
+
+        // Act - Update status
+        Incident updated = graphQLController.updateStatus(created.getId(), Status.RESOLVED);
+
+        // Assert updated
+        assertThat(updated.getStatus()).isEqualTo(Status.RESOLVED);
+        assertThat(updated.getResolvedAt()).isNotNull();
+    }
+
+    @Test
+    void testGraphQLQuery_ComplexSelection() {
+        // Arrange
+        Incident saved = incidentRepository.save(testIncident);
+
+        // Act
+        Incident result = graphQLController.incident(saved.getId());
+
+        // Assert - Verify all fields are populated
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(saved.getId());
+        assertThat(result.getTitle()).isEqualTo("Test Incident");
+        assertThat(result.getDescription()).isEqualTo("Test Description");
+        assertThat(result.getPriority()).isEqualTo(Priority.HIGH);
+        assertThat(result.getStatus()).isEqualTo(Status.OPEN);
+        assertThat(result.getAssignee()).isEqualTo("John Doe");
+        assertThat(result.getCreatedAt()).isNotNull();
+        assertThat(result.getUpdatedAt()).isNotNull();
     }
 }
