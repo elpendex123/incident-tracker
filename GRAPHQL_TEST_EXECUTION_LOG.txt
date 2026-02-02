@@ -1,0 +1,1549 @@
+
+[1m[94m================================================================================[0m
+[1m[94m                    GraphQL Test Suite for Incident Tracker                     [0m
+[1m[94m================================================================================[0m
+
+[1mTest Configuration:[0m
+GraphQL URL: http://localhost:8081/graphql
+Timeout: 10s
+Timestamp: 2026-02-01 20:38:10
+
+[1mChecking server connectivity...[0m
+[92m✓ Server is reachable[0m
+
+[1mTEST 1: Get all incidents[0m
+--------------------------------------------------------------------------------
+Query:
+[93m
+    {
+      incidents {
+        id
+        title
+        priority
+        status
+        assignee
+      }
+    }
+    [0m
+Status Code: 200
+Response: {
+  "data": {
+    "incidents": [
+      {
+        "id": "2",
+        "title": "Database Connection Timeout",
+        "priority": "CRITICAL",
+        "status": "OPEN",
+        "assignee": "Alice"
+      },
+      {
+        "id": "1",
+        "title": "Updated Test Incident",
+        "priority": "CRITICAL",
+        "status": "IN_PROGRESS",
+        "assignee": "UpdatedUser"
+      },
+      {
+        "id": "4",
+        "title": "Slow API Response",
+        "priority": "HIGH",
+        "status": "IN_PROGRESS",
+        "assignee": "Alice"
+      },
+      {
+        "id": "7",
+        "title": "GraphQL Test Incident",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Eve"
+      },
+      {
+        "id": "3",
+        "title": "Memory Leak in Service - URGENT",
+        "priority": "CRITICAL",
+        "status": "RESOLVED",
+        "assignee": "Bob"
+      },
+      {
+        "id": "8",
+        "title": "Database Connection Timeout",
+        "priority": "CRITICAL",
+        "status": "OPEN",
+        "assignee": "Alice"
+      },
+      {
+        "id": "9",
+        "title": "API Gateway Down",
+        "priority": "CRITICAL",
+        "status": "OPEN",
+        "assignee": "Bob"
+      },
+      {
+        "id": "10",
+        "title": "Memory Leak in Service",
+        "priority": "CRITICAL",
+        "status": "IN_PROGRESS",
+        "assignee": "Charlie"
+      },
+      {
+        "id": "11",
+        "title": "Server CPU Usage High",
+        "priority": "CRITICAL",
+        "status": "OPEN",
+        "assignee": "Alice"
+      },
+      {
+        "id": "12",
+        "title": "Storage Disk Full",
+        "priority": "CRITICAL",
+        "status": "OPEN",
+        "assignee": "David"
+      },
+      {
+        "id": "13",
+        "title": "Network Latency Issues",
+        "priority": "CRITICAL",
+        "status": "RESOLVED",
+        "assignee": "Eve"
+      },
+      {
+        "id": "14",
+        "title": "SSL Certificate Expiring Soon",
+        "priority": "CRITICAL",
+        "status": "IN_PROGRESS",
+        "assignee": "Frank"
+      },
+      {
+        "id": "15",
+        "title": "Database Replication Lag",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Alice"
+      },
+      {
+        "id": "16",
+        "title": "Authentication Service Down",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Bob"
+      },
+      {
+        "id": "17",
+        "title": "Cache Invalidation Failed",
+        "priority": "HIGH",
+        "status": "IN_PROGRESS",
+        "assignee": "Charlie"
+      },
+      {
+        "id": "18",
+        "title": "Load Balancer Health Check Failing",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "David"
+      },
+      {
+        "id": "19",
+        "title": "Memory Usage Alert Triggered",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Eve"
+      },
+      {
+        "id": "20",
+        "title": "DNS Resolution Slow",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Frank"
+      },
+      {
+        "id": "21",
+        "title": "Database Query Performance Degraded",
+        "priority": "HIGH",
+        "status": "IN_PROGRESS",
+        "assignee": "Alice"
+      },
+      {
+        "id": "22",
+        "title": "API Response Time Exceeds SLA",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Bob"
+      },
+      {
+        "id": "23",
+        "title": "File Upload Service Broken",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Charlie"
+      },
+      {
+        "id": "24",
+        "title": "Email Notification System Delayed",
+        "priority": "HIGH",
+        "status": "RESOLVED",
+        "assignee": "David"
+      },
+      {
+        "id": "25",
+        "title": "Search Index Stale",
+        "priority": "HIGH",
+        "status": "IN_PROGRESS",
+        "assignee": "Eve"
+      },
+      {
+        "id": "26",
+        "title": "Payment Processing Errors",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Frank"
+      },
+      {
+        "id": "27",
+        "title": "Container Orchestration Issues",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Alice"
+      },
+      {
+        "id": "28",
+        "title": "Logging Aggregation Behind",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Bob"
+      },
+      {
+        "id": "29",
+        "title": "Monitoring Alert Muted",
+        "priority": "MEDIUM",
+        "status": "IN_PROGRESS",
+        "assignee": "Charlie"
+      },
+      {
+        "id": "30",
+        "title": "Rate Limiting Misconfigured",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "David"
+      },
+      {
+        "id": "31",
+        "title": "Error Rate Spike Detected",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Eve"
+      },
+      {
+        "id": "32",
+        "title": "Session Timeout Too Short",
+        "priority": "MEDIUM",
+        "status": "RESOLVED",
+        "assignee": "Frank"
+      },
+      {
+        "id": "33",
+        "title": "Database Backup Failed",
+        "priority": "MEDIUM",
+        "status": "IN_PROGRESS",
+        "assignee": "Alice"
+      },
+      {
+        "id": "34",
+        "title": "Configuration Drift Detected",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Bob"
+      },
+      {
+        "id": "35",
+        "title": "Third Party API Rate Limited",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Charlie"
+      },
+      {
+        "id": "36",
+        "title": "CDN Cache Hit Rate Low",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "David"
+      },
+      {
+        "id": "37",
+        "title": "Security Vulnerability Detected",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Eve"
+      },
+      {
+        "id": "38",
+        "title": "UI Component Rendering Slow",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Frank"
+      },
+      {
+        "id": "39",
+        "title": "Mobile App Crash Reports",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Alice"
+      },
+      {
+        "id": "40",
+        "title": "Database Lock Contention",
+        "priority": "MEDIUM",
+        "status": "IN_PROGRESS",
+        "assignee": "Bob"
+      },
+      {
+        "id": "41",
+        "title": "Webhook Delivery Failing",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Charlie"
+      },
+      {
+        "id": "42",
+        "title": "Data Consistency Issue",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "David"
+      },
+      {
+        "id": "43",
+        "title": "Background Job Queue Backlog",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Eve"
+      },
+      {
+        "id": "44",
+        "title": "Connection Pool Exhausted",
+        "priority": "CRITICAL",
+        "status": "IN_PROGRESS",
+        "assignee": "Frank"
+      },
+      {
+        "id": "45",
+        "title": "Message Queue Down",
+        "priority": "CRITICAL",
+        "status": "OPEN",
+        "assignee": "Alice"
+      },
+      {
+        "id": "46",
+        "title": "Deployment Failed",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Bob"
+      },
+      {
+        "id": "47",
+        "title": "Configuration File Missing",
+        "priority": "CRITICAL",
+        "status": "OPEN",
+        "assignee": "Charlie"
+      },
+      {
+        "id": "48",
+        "title": "UI Test Suite Flaking",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "David"
+      },
+      {
+        "id": "49",
+        "title": "API Documentation Out of Date",
+        "priority": "LOW",
+        "status": "OPEN",
+        "assignee": "Eve"
+      },
+      {
+        "id": "50",
+        "title": "Build Time Exceeding Budget",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Frank"
+      },
+      {
+        "id": "51",
+        "title": "Duplicate Requests Being Processed",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Alice"
+      },
+      {
+        "id": "52",
+        "title": "Email Template Broken",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Bob"
+      },
+      {
+        "id": "53",
+        "title": "Feature Flag Not Evaluating",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Charlie"
+      },
+      {
+        "id": "54",
+        "title": "Database Consistency Check Failed",
+        "priority": "CRITICAL",
+        "status": "IN_PROGRESS",
+        "assignee": "David"
+      },
+      {
+        "id": "55",
+        "title": "Slow SQL Query in Production",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Eve"
+      },
+      {
+        "id": "56",
+        "title": "Cloud Provider API Rate Limit",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Frank"
+      },
+      {
+        "id": "57",
+        "title": "Backup Restoration Failed",
+        "priority": "CRITICAL",
+        "status": "OPEN",
+        "assignee": "Alice"
+      },
+      {
+        "id": "58",
+        "title": "SSL Handshake Failures",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Bob"
+      },
+      {
+        "id": "59",
+        "title": "Data Export Taking Too Long",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Charlie"
+      },
+      {
+        "id": "60",
+        "title": "Permission Denied on Shared Resource",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "David"
+      },
+      {
+        "id": "61",
+        "title": "Database Migration Incomplete",
+        "priority": "CRITICAL",
+        "status": "IN_PROGRESS",
+        "assignee": "Eve"
+      },
+      {
+        "id": "62",
+        "title": "Traffic Surge Causing Slowdown",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Frank"
+      },
+      {
+        "id": "63",
+        "title": "Circuit Breaker Triggered",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Alice"
+      },
+      {
+        "id": "64",
+        "title": "Memory Pressure Alert",
+        "priority": "CRITICAL",
+        "status": "OPEN",
+        "assignee": "Bob"
+      },
+      {
+        "id": "65",
+        "title": "Disk I/O Bottleneck",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Charlie"
+      },
+      {
+        "id": "66",
+        "title": "Log File Growing Too Large",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "David"
+      },
+      {
+        "id": "67",
+        "title": "Health Check Endpoint Slow",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Eve"
+      },
+      {
+        "id": "68",
+        "title": "Replication Lag Increasing",
+        "priority": "HIGH",
+        "status": "IN_PROGRESS",
+        "assignee": "Frank"
+      },
+      {
+        "id": "69",
+        "title": "Old Sessions Not Cleaning Up",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Alice"
+      },
+      {
+        "id": "70",
+        "title": "Background Jobs Getting Stuck",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Bob"
+      },
+      {
+        "id": "71",
+        "title": "Metrics Collection Missing",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Charlie"
+      },
+      {
+        "id": "72",
+        "title": "Trace Data Not Showing",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "David"
+      },
+      {
+        "id": "73",
+        "title": "Alert Threshold Too Sensitive",
+        "priority": "LOW",
+        "status": "OPEN",
+        "assignee": "Eve"
+      },
+      {
+        "id": "74",
+        "title": "API Versioning Issue",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Frank"
+      },
+      {
+        "id": "75",
+        "title": "CORS Headers Missing",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Alice"
+      },
+      {
+        "id": "76",
+        "title": "Compression Not Working",
+        "priority": "LOW",
+        "status": "OPEN",
+        "assignee": "Bob"
+      },
+      {
+        "id": "77",
+        "title": "Caching Headers Wrong",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Charlie"
+      },
+      {
+        "id": "78",
+        "title": "GraphQL Query Performance",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "David"
+      },
+      {
+        "id": "79",
+        "title": "WebSocket Connection Drops",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Eve"
+      },
+      {
+        "id": "80",
+        "title": "Cookie Parsing Error",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Frank"
+      },
+      {
+        "id": "81",
+        "title": "Request Body Size Limit",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Alice"
+      },
+      {
+        "id": "82",
+        "title": "Response Timeout Too Short",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Bob"
+      },
+      {
+        "id": "83",
+        "title": "Database Statement Cache Full",
+        "priority": "MEDIUM",
+        "status": "IN_PROGRESS",
+        "assignee": "Charlie"
+      },
+      {
+        "id": "84",
+        "title": "Thread Pool Exhausted",
+        "priority": "CRITICAL",
+        "status": "OPEN",
+        "assignee": "David"
+      },
+      {
+        "id": "85",
+        "title": "Resource Leak Detected",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Eve"
+      },
+      {
+        "id": "86",
+        "title": "Batch Processing Backlog",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Frank"
+      },
+      {
+        "id": "87",
+        "title": "Service Dependency Down",
+        "priority": "CRITICAL",
+        "status": "OPEN",
+        "assignee": "Alice"
+      },
+      {
+        "id": "88",
+        "title": "Monitoring Blind Spot",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Bob"
+      },
+      {
+        "id": "89",
+        "title": "Deployment Rollback Needed",
+        "priority": "HIGH",
+        "status": "IN_PROGRESS",
+        "assignee": "Charlie"
+      },
+      {
+        "id": "90",
+        "title": "Testing Environment Offline",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "David"
+      },
+      {
+        "id": "91",
+        "title": "Integration Test Timeout",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Eve"
+      },
+      {
+        "id": "92",
+        "title": "Code Coverage Declined",
+        "priority": "LOW",
+        "status": "OPEN",
+        "assignee": "Frank"
+      },
+      {
+        "id": "93",
+        "title": "Documentation Inconsistency",
+        "priority": "LOW",
+        "status": "OPEN",
+        "assignee": "Alice"
+      },
+      {
+        "id": "94",
+        "title": "Dependency Vulnerability",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Bob"
+      },
+      {
+        "id": "95",
+        "title": "Library Version Mismatch",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Charlie"
+      },
+      {
+        "id": "96",
+        "title": "Performance Regression Detected",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "David"
+      },
+      {
+        "id": "97",
+        "title": "Compliance Issue Found",
+        "priority": "CRITICAL",
+        "status": "OPEN",
+        "assignee": "Eve"
+      },
+      {
+        "id": "98",
+        "title": "Audit Log Missing",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Frank"
+      },
+      {
+        "id": "99",
+        "title": "User Reported Slowness",
+        "priority": "MEDIUM",
+        "status": "OPEN",
+        "assignee": "Alice"
+      },
+      {
+        "id": "100",
+        "title": "Intermittent 500 Errors",
+        "priority": "HIGH",
+        "status": "OPEN",
+        "assignee": "Bob"
+      },
+      {
+        "id": "101",
+        "title": "Rate Limit Bypass Found",
+        "priority": "CRITICAL",
+        "status": "OPEN",
+        "assignee": "Charlie"
+      },
+      {
+        "id": "102",
+        "title": "Data Migration Incomplete",
+        "priority": "HIGH",
+        "status": "IN_PROGRESS",
+        "assignee": "David"
+      }
+    ]
+  }
+}
+[92m✓ PASS: Retrieved 100 incidents[0m
+
+[1mTEST 2: Get incident by ID[0m
+--------------------------------------------------------------------------------
+Query:
+[93m
+    {
+      incident(id: 1) {
+        id
+        title
+        description
+        priority
+        status
+        assignee
+        createdAt
+      }
+    }
+    [0m
+Status Code: 200
+Response: {
+  "data": {
+    "incident": {
+      "id": "1",
+      "title": "Updated Test Incident",
+      "description": "Updated via API test",
+      "priority": "CRITICAL",
+      "status": "IN_PROGRESS",
+      "assignee": "UpdatedUser",
+      "createdAt": "2026-02-01T20:09:24.944040"
+    }
+  }
+}
+[92m✓ PASS: Retrieved incident ID: 1[0m
+
+[1mTEST 3: Filter by status[0m
+--------------------------------------------------------------------------------
+Query:
+[93m
+    {
+      incidentsByStatus(status: OPEN) {
+        id
+        title
+        status
+      }
+    }
+    [0m
+Status Code: 200
+Response: {
+  "data": {
+    "incidentsByStatus": [
+      {
+        "id": "2",
+        "title": "Database Connection Timeout",
+        "status": "OPEN"
+      },
+      {
+        "id": "7",
+        "title": "GraphQL Test Incident",
+        "status": "OPEN"
+      },
+      {
+        "id": "8",
+        "title": "Database Connection Timeout",
+        "status": "OPEN"
+      },
+      {
+        "id": "9",
+        "title": "API Gateway Down",
+        "status": "OPEN"
+      },
+      {
+        "id": "11",
+        "title": "Server CPU Usage High",
+        "status": "OPEN"
+      },
+      {
+        "id": "12",
+        "title": "Storage Disk Full",
+        "status": "OPEN"
+      },
+      {
+        "id": "15",
+        "title": "Database Replication Lag",
+        "status": "OPEN"
+      },
+      {
+        "id": "16",
+        "title": "Authentication Service Down",
+        "status": "OPEN"
+      },
+      {
+        "id": "18",
+        "title": "Load Balancer Health Check Failing",
+        "status": "OPEN"
+      },
+      {
+        "id": "19",
+        "title": "Memory Usage Alert Triggered",
+        "status": "OPEN"
+      },
+      {
+        "id": "20",
+        "title": "DNS Resolution Slow",
+        "status": "OPEN"
+      },
+      {
+        "id": "22",
+        "title": "API Response Time Exceeds SLA",
+        "status": "OPEN"
+      },
+      {
+        "id": "23",
+        "title": "File Upload Service Broken",
+        "status": "OPEN"
+      },
+      {
+        "id": "26",
+        "title": "Payment Processing Errors",
+        "status": "OPEN"
+      },
+      {
+        "id": "27",
+        "title": "Container Orchestration Issues",
+        "status": "OPEN"
+      },
+      {
+        "id": "28",
+        "title": "Logging Aggregation Behind",
+        "status": "OPEN"
+      },
+      {
+        "id": "30",
+        "title": "Rate Limiting Misconfigured",
+        "status": "OPEN"
+      },
+      {
+        "id": "31",
+        "title": "Error Rate Spike Detected",
+        "status": "OPEN"
+      },
+      {
+        "id": "34",
+        "title": "Configuration Drift Detected",
+        "status": "OPEN"
+      },
+      {
+        "id": "35",
+        "title": "Third Party API Rate Limited",
+        "status": "OPEN"
+      },
+      {
+        "id": "36",
+        "title": "CDN Cache Hit Rate Low",
+        "status": "OPEN"
+      },
+      {
+        "id": "37",
+        "title": "Security Vulnerability Detected",
+        "status": "OPEN"
+      },
+      {
+        "id": "38",
+        "title": "UI Component Rendering Slow",
+        "status": "OPEN"
+      },
+      {
+        "id": "39",
+        "title": "Mobile App Crash Reports",
+        "status": "OPEN"
+      },
+      {
+        "id": "41",
+        "title": "Webhook Delivery Failing",
+        "status": "OPEN"
+      },
+      {
+        "id": "42",
+        "title": "Data Consistency Issue",
+        "status": "OPEN"
+      },
+      {
+        "id": "43",
+        "title": "Background Job Queue Backlog",
+        "status": "OPEN"
+      },
+      {
+        "id": "45",
+        "title": "Message Queue Down",
+        "status": "OPEN"
+      },
+      {
+        "id": "46",
+        "title": "Deployment Failed",
+        "status": "OPEN"
+      },
+      {
+        "id": "47",
+        "title": "Configuration File Missing",
+        "status": "OPEN"
+      },
+      {
+        "id": "48",
+        "title": "UI Test Suite Flaking",
+        "status": "OPEN"
+      },
+      {
+        "id": "49",
+        "title": "API Documentation Out of Date",
+        "status": "OPEN"
+      },
+      {
+        "id": "50",
+        "title": "Build Time Exceeding Budget",
+        "status": "OPEN"
+      },
+      {
+        "id": "51",
+        "title": "Duplicate Requests Being Processed",
+        "status": "OPEN"
+      },
+      {
+        "id": "52",
+        "title": "Email Template Broken",
+        "status": "OPEN"
+      },
+      {
+        "id": "53",
+        "title": "Feature Flag Not Evaluating",
+        "status": "OPEN"
+      },
+      {
+        "id": "55",
+        "title": "Slow SQL Query in Production",
+        "status": "OPEN"
+      },
+      {
+        "id": "56",
+        "title": "Cloud Provider API Rate Limit",
+        "status": "OPEN"
+      },
+      {
+        "id": "57",
+        "title": "Backup Restoration Failed",
+        "status": "OPEN"
+      },
+      {
+        "id": "58",
+        "title": "SSL Handshake Failures",
+        "status": "OPEN"
+      },
+      {
+        "id": "59",
+        "title": "Data Export Taking Too Long",
+        "status": "OPEN"
+      },
+      {
+        "id": "60",
+        "title": "Permission Denied on Shared Resource",
+        "status": "OPEN"
+      },
+      {
+        "id": "62",
+        "title": "Traffic Surge Causing Slowdown",
+        "status": "OPEN"
+      },
+      {
+        "id": "63",
+        "title": "Circuit Breaker Triggered",
+        "status": "OPEN"
+      },
+      {
+        "id": "64",
+        "title": "Memory Pressure Alert",
+        "status": "OPEN"
+      },
+      {
+        "id": "65",
+        "title": "Disk I/O Bottleneck",
+        "status": "OPEN"
+      },
+      {
+        "id": "66",
+        "title": "Log File Growing Too Large",
+        "status": "OPEN"
+      },
+      {
+        "id": "67",
+        "title": "Health Check Endpoint Slow",
+        "status": "OPEN"
+      },
+      {
+        "id": "69",
+        "title": "Old Sessions Not Cleaning Up",
+        "status": "OPEN"
+      },
+      {
+        "id": "70",
+        "title": "Background Jobs Getting Stuck",
+        "status": "OPEN"
+      },
+      {
+        "id": "71",
+        "title": "Metrics Collection Missing",
+        "status": "OPEN"
+      },
+      {
+        "id": "72",
+        "title": "Trace Data Not Showing",
+        "status": "OPEN"
+      },
+      {
+        "id": "73",
+        "title": "Alert Threshold Too Sensitive",
+        "status": "OPEN"
+      },
+      {
+        "id": "74",
+        "title": "API Versioning Issue",
+        "status": "OPEN"
+      },
+      {
+        "id": "75",
+        "title": "CORS Headers Missing",
+        "status": "OPEN"
+      },
+      {
+        "id": "76",
+        "title": "Compression Not Working",
+        "status": "OPEN"
+      },
+      {
+        "id": "77",
+        "title": "Caching Headers Wrong",
+        "status": "OPEN"
+      },
+      {
+        "id": "78",
+        "title": "GraphQL Query Performance",
+        "status": "OPEN"
+      },
+      {
+        "id": "79",
+        "title": "WebSocket Connection Drops",
+        "status": "OPEN"
+      },
+      {
+        "id": "80",
+        "title": "Cookie Parsing Error",
+        "status": "OPEN"
+      },
+      {
+        "id": "81",
+        "title": "Request Body Size Limit",
+        "status": "OPEN"
+      },
+      {
+        "id": "82",
+        "title": "Response Timeout Too Short",
+        "status": "OPEN"
+      },
+      {
+        "id": "84",
+        "title": "Thread Pool Exhausted",
+        "status": "OPEN"
+      },
+      {
+        "id": "85",
+        "title": "Resource Leak Detected",
+        "status": "OPEN"
+      },
+      {
+        "id": "86",
+        "title": "Batch Processing Backlog",
+        "status": "OPEN"
+      },
+      {
+        "id": "87",
+        "title": "Service Dependency Down",
+        "status": "OPEN"
+      },
+      {
+        "id": "88",
+        "title": "Monitoring Blind Spot",
+        "status": "OPEN"
+      },
+      {
+        "id": "90",
+        "title": "Testing Environment Offline",
+        "status": "OPEN"
+      },
+      {
+        "id": "91",
+        "title": "Integration Test Timeout",
+        "status": "OPEN"
+      },
+      {
+        "id": "92",
+        "title": "Code Coverage Declined",
+        "status": "OPEN"
+      },
+      {
+        "id": "93",
+        "title": "Documentation Inconsistency",
+        "status": "OPEN"
+      },
+      {
+        "id": "94",
+        "title": "Dependency Vulnerability",
+        "status": "OPEN"
+      },
+      {
+        "id": "95",
+        "title": "Library Version Mismatch",
+        "status": "OPEN"
+      },
+      {
+        "id": "96",
+        "title": "Performance Regression Detected",
+        "status": "OPEN"
+      },
+      {
+        "id": "97",
+        "title": "Compliance Issue Found",
+        "status": "OPEN"
+      },
+      {
+        "id": "98",
+        "title": "Audit Log Missing",
+        "status": "OPEN"
+      },
+      {
+        "id": "99",
+        "title": "User Reported Slowness",
+        "status": "OPEN"
+      },
+      {
+        "id": "100",
+        "title": "Intermittent 500 Errors",
+        "status": "OPEN"
+      },
+      {
+        "id": "101",
+        "title": "Rate Limit Bypass Found",
+        "status": "OPEN"
+      }
+    ]
+  }
+}
+[92m✓ PASS: Retrieved 79 incidents with OPEN status[0m
+
+[1mTEST 4: Filter by priority[0m
+--------------------------------------------------------------------------------
+Query:
+[93m
+    {
+      incidentsByPriority(priority: CRITICAL) {
+        id
+        title
+        priority
+      }
+    }
+    [0m
+Status Code: 200
+Response: {
+  "data": {
+    "incidentsByPriority": [
+      {
+        "id": "2",
+        "title": "Database Connection Timeout",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "1",
+        "title": "Updated Test Incident",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "3",
+        "title": "Memory Leak in Service - URGENT",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "8",
+        "title": "Database Connection Timeout",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "9",
+        "title": "API Gateway Down",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "10",
+        "title": "Memory Leak in Service",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "11",
+        "title": "Server CPU Usage High",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "12",
+        "title": "Storage Disk Full",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "13",
+        "title": "Network Latency Issues",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "14",
+        "title": "SSL Certificate Expiring Soon",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "44",
+        "title": "Connection Pool Exhausted",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "45",
+        "title": "Message Queue Down",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "47",
+        "title": "Configuration File Missing",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "54",
+        "title": "Database Consistency Check Failed",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "57",
+        "title": "Backup Restoration Failed",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "61",
+        "title": "Database Migration Incomplete",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "64",
+        "title": "Memory Pressure Alert",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "84",
+        "title": "Thread Pool Exhausted",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "87",
+        "title": "Service Dependency Down",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "97",
+        "title": "Compliance Issue Found",
+        "priority": "CRITICAL"
+      },
+      {
+        "id": "101",
+        "title": "Rate Limit Bypass Found",
+        "priority": "CRITICAL"
+      }
+    ]
+  }
+}
+[92m✓ PASS: Retrieved 21 incidents with CRITICAL priority[0m
+
+[1mTEST 5: Filter by assignee[0m
+--------------------------------------------------------------------------------
+Query:
+[93m
+    {
+      incidentsByAssignee(assignee: "Alice") {
+        id
+        title
+        assignee
+      }
+    }
+    [0m
+Status Code: 200
+Response: {
+  "data": {
+    "incidentsByAssignee": [
+      {
+        "id": "2",
+        "title": "Database Connection Timeout",
+        "assignee": "Alice"
+      },
+      {
+        "id": "4",
+        "title": "Slow API Response",
+        "assignee": "Alice"
+      },
+      {
+        "id": "8",
+        "title": "Database Connection Timeout",
+        "assignee": "Alice"
+      },
+      {
+        "id": "11",
+        "title": "Server CPU Usage High",
+        "assignee": "Alice"
+      },
+      {
+        "id": "15",
+        "title": "Database Replication Lag",
+        "assignee": "Alice"
+      },
+      {
+        "id": "21",
+        "title": "Database Query Performance Degraded",
+        "assignee": "Alice"
+      },
+      {
+        "id": "27",
+        "title": "Container Orchestration Issues",
+        "assignee": "Alice"
+      },
+      {
+        "id": "33",
+        "title": "Database Backup Failed",
+        "assignee": "Alice"
+      },
+      {
+        "id": "39",
+        "title": "Mobile App Crash Reports",
+        "assignee": "Alice"
+      },
+      {
+        "id": "45",
+        "title": "Message Queue Down",
+        "assignee": "Alice"
+      },
+      {
+        "id": "51",
+        "title": "Duplicate Requests Being Processed",
+        "assignee": "Alice"
+      },
+      {
+        "id": "57",
+        "title": "Backup Restoration Failed",
+        "assignee": "Alice"
+      },
+      {
+        "id": "63",
+        "title": "Circuit Breaker Triggered",
+        "assignee": "Alice"
+      },
+      {
+        "id": "69",
+        "title": "Old Sessions Not Cleaning Up",
+        "assignee": "Alice"
+      },
+      {
+        "id": "75",
+        "title": "CORS Headers Missing",
+        "assignee": "Alice"
+      },
+      {
+        "id": "81",
+        "title": "Request Body Size Limit",
+        "assignee": "Alice"
+      },
+      {
+        "id": "87",
+        "title": "Service Dependency Down",
+        "assignee": "Alice"
+      },
+      {
+        "id": "93",
+        "title": "Documentation Inconsistency",
+        "assignee": "Alice"
+      },
+      {
+        "id": "99",
+        "title": "User Reported Slowness",
+        "assignee": "Alice"
+      }
+    ]
+  }
+}
+[92m✓ PASS: Retrieved 19 incidents assigned to Alice[0m
+
+[1mTEST 6: Create incident[0m
+--------------------------------------------------------------------------------
+Mutation:
+[93m
+    mutation {
+      createIncident(input: {
+        title: "GraphQL Test Incident"
+        description: "Created via GraphQL mutation"
+        priority: HIGH
+        assignee: "GraphQLTest"
+      }) {
+        id
+        title
+        createdAt
+      }
+    }
+    [0m
+Status Code: 200
+Response: {
+  "data": {
+    "createIncident": {
+      "id": "109",
+      "title": "GraphQL Test Incident",
+      "createdAt": "2026-02-01T20:38:10.177530"
+    }
+  }
+}
+[92m✓ PASS: Created incident with ID: 109[0m
+
+[1mTEST 7: Update incident[0m
+--------------------------------------------------------------------------------
+Mutation:
+[93m
+    mutation {
+      updateIncident(id: 109, input: {
+        title: "Updated via GraphQL"
+        priority: CRITICAL
+      }) {
+        id
+        title
+        priority
+        updatedAt
+      }
+    }
+    [0m
+Status Code: 200
+Response: {
+  "data": {
+    "updateIncident": {
+      "id": "109",
+      "title": "Updated via GraphQL",
+      "priority": "CRITICAL",
+      "updatedAt": "2026-02-01T20:38:10.204452"
+    }
+  }
+}
+[92m✓ PASS: Updated incident ID: 109[0m
+
+[1mTEST 8: Update status[0m
+--------------------------------------------------------------------------------
+Mutation:
+[93m
+    mutation {
+      updateStatus(id: 109, status: IN_PROGRESS) {
+        id
+        status
+        updatedAt
+      }
+    }
+    [0m
+Status Code: 200
+Response: {
+  "data": {
+    "updateStatus": {
+      "id": "109",
+      "status": "IN_PROGRESS",
+      "updatedAt": "2026-02-01T20:38:10.241788"
+    }
+  }
+}
+[92m✓ PASS: Updated incident status to: IN_PROGRESS[0m
+
+[1mTEST 9: Delete incident[0m
+--------------------------------------------------------------------------------
+Mutation:
+[93m
+    mutation {
+      deleteIncident(id: 109)
+    }
+    [0m
+Status Code: 200
+Response: {
+  "data": {
+    "deleteIncident": true
+  }
+}
+[92m✓ PASS: Deleted incident ID: 109[0m
+
+[1m[94m================================================================================[0m
+[1m[94m                                  TEST SUMMARY                                  [0m
+[1m[94m================================================================================[0m
+
+Total Tests: 9
+Passed: [92m9[0m
+Failed: [91m0[0m
+Skipped: [93m0[0m
+
+Pass Rate: 100.0% (9/9)
+
+[1mDetailed Results:[0m
+--------------------------------------------------------------------------------
+[92m✓ Test 1: Get all incidents[0m
+[92m✓ Test 2: Get incident by ID[0m
+[92m✓ Test 3: Filter by status[0m
+[92m✓ Test 4: Filter by priority[0m
+[92m✓ Test 5: Filter by assignee[0m
+[92m✓ Test 6: Create incident[0m
+[92m✓ Test 7: Update incident[0m
+[92m✓ Test 8: Update status[0m
+[92m✓ Test 9: Delete incident[0m
+
+================================================================================
+[92m[1mAll tests passed![0m

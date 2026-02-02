@@ -1,0 +1,96 @@
+title,description,priority,status,assignee
+Database Connection Timeout,Connection to production database is timing out frequently,CRITICAL,OPEN,Alice
+API Gateway Down,Main API gateway returning 503 errors,CRITICAL,OPEN,Bob
+Memory Leak in Service,Service consuming too much memory and causing crashes,CRITICAL,IN_PROGRESS,Charlie
+Server CPU Usage High,Production server CPU at 95% consistently,CRITICAL,OPEN,Alice
+Storage Disk Full,Production disk space critically low at 98%,CRITICAL,OPEN,David
+Network Latency Issues,Intermittent high latency on main network,CRITICAL,RESOLVED,Eve
+SSL Certificate Expiring Soon,SSL certificate will expire in 3 days,CRITICAL,IN_PROGRESS,Frank
+Database Replication Lag,Replication lag growing between primary and standby,HIGH,OPEN,Alice
+Authentication Service Down,OAuth service intermittently unavailable,HIGH,OPEN,Bob
+Cache Invalidation Failed,Redis cache not invalidating properly,HIGH,IN_PROGRESS,Charlie
+Load Balancer Health Check Failing,Multiple instances marked unhealthy,HIGH,OPEN,David
+Memory Usage Alert Triggered,Memory utilization exceeding threshold,HIGH,OPEN,Eve
+DNS Resolution Slow,DNS queries taking longer than 5 seconds,HIGH,OPEN,Frank
+Database Query Performance Degraded,Complex queries taking 10x longer than baseline,HIGH,IN_PROGRESS,Alice
+API Response Time Exceeds SLA,Response times averaging 5 seconds,HIGH,OPEN,Bob
+File Upload Service Broken,File uploads failing with 500 errors,HIGH,OPEN,Charlie
+Email Notification System Delayed,Emails delayed by 30+ minutes,HIGH,RESOLVED,David
+Search Index Stale,Search results returning outdated information,HIGH,IN_PROGRESS,Eve
+Payment Processing Errors,Payment processor integration failing intermittently,HIGH,OPEN,Frank
+Container Orchestration Issues,Multiple containers failing to start,MEDIUM,OPEN,Alice
+Logging Aggregation Behind,Log collection lagging by 5 minutes,MEDIUM,OPEN,Bob
+Monitoring Alert Muted,Critical alerts not being sent to team,MEDIUM,IN_PROGRESS,Charlie
+Rate Limiting Misconfigured,API rate limits incorrectly applied,MEDIUM,OPEN,David
+Error Rate Spike Detected,Application error rate at 0.5%,MEDIUM,OPEN,Eve
+Session Timeout Too Short,User sessions expiring after 5 minutes,MEDIUM,RESOLVED,Frank
+Database Backup Failed,Nightly backup did not complete,MEDIUM,IN_PROGRESS,Alice
+Configuration Drift Detected,Production config diverging from version control,MEDIUM,OPEN,Bob
+Third Party API Rate Limited,Third party service restricting our calls,MEDIUM,OPEN,Charlie
+CDN Cache Hit Rate Low,Only 60% of requests served from CDN,MEDIUM,OPEN,David
+Security Vulnerability Detected,Low severity XSS vulnerability found,MEDIUM,OPEN,Eve
+UI Component Rendering Slow,Dashboard taking 10 seconds to load,MEDIUM,OPEN,Frank
+Mobile App Crash Reports,10% of sessions ending with crash,MEDIUM,OPEN,Alice
+Database Lock Contention,Long locks on high traffic table,MEDIUM,IN_PROGRESS,Bob
+Webhook Delivery Failing,20% of webhook deliveries failing,MEDIUM,OPEN,Charlie
+Data Consistency Issue,Primary and secondary data not matching,HIGH,OPEN,David
+Background Job Queue Backlog,Job queue growing faster than processing,HIGH,OPEN,Eve
+Connection Pool Exhausted,Database connection pool at 100%,CRITICAL,IN_PROGRESS,Frank
+Message Queue Down,Kafka cluster unreachable,CRITICAL,OPEN,Alice
+Deployment Failed,Latest deployment rolled back,HIGH,OPEN,Bob
+Configuration File Missing,Required config file not found in production,CRITICAL,OPEN,Charlie
+UI Test Suite Flaking,30% of UI tests failing intermittently,MEDIUM,OPEN,David
+API Documentation Out of Date,API docs missing recent endpoints,LOW,OPEN,Eve
+Build Time Exceeding Budget,CI/CD build taking 45 minutes,MEDIUM,OPEN,Frank
+Duplicate Requests Being Processed,Idempotency not working correctly,HIGH,OPEN,Alice
+Email Template Broken,Welcome emails not rendering,MEDIUM,OPEN,Bob
+Feature Flag Not Evaluating,Feature flag always returning false,HIGH,OPEN,Charlie
+Database Consistency Check Failed,Data integrity check failed,CRITICAL,IN_PROGRESS,David
+Slow SQL Query in Production,Query taking 30 seconds to execute,HIGH,OPEN,Eve
+Cloud Provider API Rate Limit,AWS API calls being throttled,MEDIUM,OPEN,Frank
+Backup Restoration Failed,Unable to restore from backup,CRITICAL,OPEN,Alice
+SSL Handshake Failures,20% increase in SSL handshake errors,HIGH,OPEN,Bob
+Data Export Taking Too Long,Export of 1M records takes 2 hours,MEDIUM,OPEN,Charlie
+Permission Denied on Shared Resource,Access to shared storage failing,HIGH,OPEN,David
+Database Migration Incomplete,Migration script didn't complete successfully,CRITICAL,IN_PROGRESS,Eve
+Traffic Surge Causing Slowdown,Server struggling during peak hours,HIGH,OPEN,Frank
+Circuit Breaker Triggered,External service calls being rejected,HIGH,OPEN,Alice
+Memory Pressure Alert,System memory pressure critical,CRITICAL,OPEN,Bob
+Disk I/O Bottleneck,Disk write latency exceeding 100ms,HIGH,OPEN,Charlie
+Log File Growing Too Large,Single log file exceeding 10GB,MEDIUM,OPEN,David
+Health Check Endpoint Slow,Health check taking 5 seconds,MEDIUM,OPEN,Eve
+Replication Lag Increasing,Replication lag at 2 minutes,HIGH,IN_PROGRESS,Frank
+Old Sessions Not Cleaning Up,Session table growing unbounded,MEDIUM,OPEN,Alice
+Background Jobs Getting Stuck,Jobs in running state indefinitely,HIGH,OPEN,Bob
+Metrics Collection Missing,Some metrics not being collected,MEDIUM,OPEN,Charlie
+Trace Data Not Showing,Distributed tracing not capturing data,MEDIUM,OPEN,David
+Alert Threshold Too Sensitive,Receiving too many false alerts,LOW,OPEN,Eve
+API Versioning Issue,V1 API returning V2 responses,HIGH,OPEN,Frank
+CORS Headers Missing,Cross-origin requests failing,MEDIUM,OPEN,Alice
+Compression Not Working,Response compression disabled,LOW,OPEN,Bob
+Caching Headers Wrong,Static assets caching incorrectly,MEDIUM,OPEN,Charlie
+GraphQL Query Performance,Complex GraphQL queries slow,MEDIUM,OPEN,David
+WebSocket Connection Drops,WebSocket connections closing unexpectedly,HIGH,OPEN,Eve
+Cookie Parsing Error,Session cookies not parsed correctly,HIGH,OPEN,Frank
+Request Body Size Limit,Large requests being rejected,MEDIUM,OPEN,Alice
+Response Timeout Too Short,Response timeout set to 2 seconds,MEDIUM,OPEN,Bob
+Database Statement Cache Full,Prepared statement cache exhausted,MEDIUM,IN_PROGRESS,Charlie
+Thread Pool Exhausted,All worker threads busy,CRITICAL,OPEN,David
+Resource Leak Detected,Memory growing with each request,HIGH,OPEN,Eve
+Batch Processing Backlog,Batch queue 10k items behind,MEDIUM,OPEN,Frank
+Service Dependency Down,Critical dependency service unavailable,CRITICAL,OPEN,Alice
+Monitoring Blind Spot,Gap in monitoring coverage detected,MEDIUM,OPEN,Bob
+Deployment Rollback Needed,Current deployment causing issues,HIGH,IN_PROGRESS,Charlie
+Testing Environment Offline,Test database not responding,HIGH,OPEN,David
+Integration Test Timeout,Integration tests taking 20 minutes,MEDIUM,OPEN,Eve
+Code Coverage Declined,Code coverage dropped to 60%,LOW,OPEN,Frank
+Documentation Inconsistency,API documentation contradicting code,LOW,OPEN,Alice
+Dependency Vulnerability,Security vulnerability in dependency,HIGH,OPEN,Bob
+Library Version Mismatch,Library versions inconsistent across services,MEDIUM,OPEN,Charlie
+Performance Regression Detected,Benchmark results show 15% degradation,HIGH,OPEN,David
+Compliance Issue Found,Data handling not compliant with regulations,CRITICAL,OPEN,Eve
+Audit Log Missing,Audit trail incomplete for transaction,HIGH,OPEN,Frank
+User Reported Slowness,Customer reporting slow performance,MEDIUM,OPEN,Alice
+Intermittent 500 Errors,Sporadic internal server errors,HIGH,OPEN,Bob
+Rate Limit Bypass Found,Rate limiting can be bypassed,CRITICAL,OPEN,Charlie
+Data Migration Incomplete,Migration of legacy data failing,HIGH,IN_PROGRESS,David

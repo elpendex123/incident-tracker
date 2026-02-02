@@ -1,0 +1,35 @@
+1. create a python or bash script that constantly runs rest api entries every minute , with random correct typical data for each query? 
+
+2. create  postman collections to test rest api, graphql, each one with it's own folder for it's CRUD methods
+
+3. help set up jenkinsfile in jenkins
+- state what jobs can be created, one for each action, for example: build, test rest, test graphql, deploy, etc, whatever other jobs you can think of, also one for build test and deploy all in one
+
+4. Deploy to Staging/Production
+Traditional Servers: Deploy JAR to production server
+Docker: Use the included Dockerfile for containerization
+Kubernetes: Deploy using k8s manifests
+Cloud Platforms: AWS, GCP, Azure (EC2, App Service, Cloud Run, etc.)
+
+5. Set Up Monitoring & Alerting - which ones do you recommend? free ones
+Application Performance Monitoring (APM)
+Error tracking (Sentry, Rollbar)
+Log aggregation (ELK stack, CloudWatch)
+Alerts for critical incidents
+Dashboard for visualization
+
+6. Database Optimization
+Create indexes on frequently queried columns
+Set up backup and recovery procedures
+Implement database monitoring
+Plan for scaling
+
+<!-- 
+7. Implement Security - later on in aws, not right now
+Add API authentication (JWT, OAuth)
+Implement role-based access control (RBAC)
+Add request validation/sanitization
+Set up HTTPS/TLS
+Database encryption
+Audit logging
+ -->
