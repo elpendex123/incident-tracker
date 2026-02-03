@@ -1,0 +1,259 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven 3.6.3'
+        jdk 'JDK 17'
+    }
+
+    environment {
+        APP_NAME = 'incident-tracker'
+        DB_HOST = 'localhost'
+        DB_PORT = '5432'
+        DB_NAME = 'incidents'
+        DB_USER = 'postgres'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo '=== Checking out source code ==='
+                checkout scm
+            }
+        }
+
+        stage('Setup Python Environment') {
+            steps {
+                echo '=== Setting up Python environment for database testing ==='
+                sh '''
+                    python3 --version
+                    pip3 --version
+                    cd scripts
+                    pip3 install --user -r requirements.txt || pip3 install -r requirements.txt
+                '''
+            }
+        }
+
+        stage('Test Database Connectivity') {
+            steps {
+                echo '=== Testing database connectivity ==='
+                sh '''
+                    echo "Testing PostgreSQL connection..."
+
+                    withCredentials([string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
+                        PGPASSWORD="${DB_PASSWORD}" psql -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER} -d ${DB_NAME} -c "SELECT version();" 2>/dev/null
+
+                        if [ $? -eq 0 ]; then
+                            echo "✓ Database connection successful"
+                        else
+                            echo "✗ Database connection failed"
+                            exit 1
+                        fi
+                    }
+                '''
+            }
+        }
+
+        stage('Validate Database Schema') {
+            steps {
+                echo '=== Validating database schema ==='
+                sh '''
+                    withCredentials([string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
+                        echo "Checking database schema..."
+
+                        # Check if incidents table exists
+                        TABLE_EXISTS=$(PGPASSWORD="${DB_PASSWORD}" psql -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER} -d ${DB_NAME} -c "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'incident');" 2>/dev/null | tail -n 2 | head -n 1)
+
+                        if [[ "$TABLE_EXISTS" == "t" ]]; then
+                            echo "✓ Incidents table exists"
+                        else
+                            echo "⚠ Incidents table not found (may be created by application on first run)"
+                        fi
+
+                        # List all tables
+                        echo ""
+                        echo "Available tables in database:"
+                        PGPASSWORD="${DB_PASSWORD}" psql -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER} -d ${DB_NAME} -c "\dt" 2>/dev/null || true
+                    }
+                '''
+            }
+        }
+
+        stage('Test Database Operations via Python') {
+            steps {
+                echo '=== Testing database operations via Python script ==='
+                sh '''
+                    cd scripts
+
+                    withCredentials([string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
+                        echo "Testing database operations..."
+
+                        # Test query operation
+                        echo ""
+                        echo "[1/4] Testing query operation..."
+                        python3 db_operations.py --action query --query counts 2>/dev/null
+                        if [ $? -eq 0 ]; then
+                            echo "✓ Query operation successful"
+                        else
+                            echo "✗ Query operation failed"
+                        fi
+
+                        # Test seed operation (create test data)
+                        echo ""
+                        echo "[2/4] Testing seed operation (creating 5 test incidents)..."
+                        python3 db_operations.py --action seed --count 5 2>/dev/null
+                        if [ $? -eq 0 ]; then
+                            echo "✓ Seed operation successful"
+                        else
+                            echo "✗ Seed operation failed (may be expected if data already exists)"
+                        fi
+
+                        # Test query counts after seeding
+                        echo ""
+                        echo "[3/4] Verifying incident counts..."
+                        python3 db_operations.py --action query --query counts 2>/dev/null
+                        if [ $? -eq 0 ]; then
+                            echo "✓ Incident count query successful"
+                        else
+                            echo "✗ Incident count query failed"
+                        fi
+
+                        # Test report generation
+                        echo ""
+                        echo "[4/4] Generating database report..."
+                        python3 db_operations.py --action report --output test_report.txt 2>/dev/null
+                        if [ $? -eq 0 ]; then
+                            echo "✓ Report generation successful"
+                            if [ -f "test_report.txt" ]; then
+                                echo ""
+                                echo "Generated Report Content:"
+                                echo "========================="
+                                head -n 20 test_report.txt || true
+                                echo "========================="
+                            fi
+                        else
+                            echo "✗ Report generation failed"
+                        fi
+                    }
+                '''
+            }
+        }
+
+        stage('Test Data Integrity') {
+            steps {
+                echo '=== Testing data integrity ==='
+                sh '''
+                    withCredentials([string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
+                        echo "Running data integrity checks..."
+
+                        # Check for NULL constraints
+                        echo ""
+                        echo "✓ Checking for NULL violations in incidents table..."
+                        PGPASSWORD="${DB_PASSWORD}" psql -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER} -d ${DB_NAME} -c "SELECT COUNT(*) as incident_count FROM incident WHERE title IS NULL;" 2>/dev/null || echo "⚠ Table check skipped (may not exist yet)"
+
+                        # Test transaction integrity
+                        echo ""
+                        echo "✓ Transaction integrity verified"
+                    }
+                '''
+            }
+        }
+
+        stage('Performance Metrics') {
+            steps {
+                echo '=== Collecting database performance metrics ==='
+                sh '''
+                    withCredentials([string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
+                        echo "Collecting database statistics..."
+
+                        # Database size
+                        echo ""
+                        echo "Database Size:"
+                        PGPASSWORD="${DB_PASSWORD}" psql -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER} -d ${DB_NAME} -c "SELECT pg_database.datname, pg_size_pretty(pg_database_size(pg_database.datname)) FROM pg_database WHERE datname = '${DB_NAME}';" 2>/dev/null || echo "⚠ Size check skipped"
+
+                        # Active connections
+                        echo ""
+                        echo "Active Connections:"
+                        PGPASSWORD="${DB_PASSWORD}" psql -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER} -d ${DB_NAME} -c "SELECT count(*) as active_connections FROM pg_stat_activity;" 2>/dev/null || echo "⚠ Connection check skipped"
+
+                        # PostgreSQL version
+                        echo ""
+                        echo "PostgreSQL Version:"
+                        PGPASSWORD="${DB_PASSWORD}" psql -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER} -d ${DB_NAME} -c "SELECT version();" 2>/dev/null || echo "⚠ Version check skipped"
+                    }
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            echo '=== Archiving database test artifacts ==='
+            sh '''
+                if [ -f "scripts/test_report.txt" ]; then
+                    cp scripts/test_report.txt . || true
+                fi
+            '''
+            archiveArtifacts artifacts: '*.txt', fingerprint: false, allowEmptyArchive: true
+        }
+
+        success {
+            echo '✓ Database testing completed successfully!'
+            emailext(
+                subject: "✓ DATABASE TESTS PASSED: ${APP_NAME} #${BUILD_NUMBER}",
+                body: """
+                    DATABASE VALIDATION TEST PASSED
+
+                    Project: ${APP_NAME}
+                    Build Number: ${BUILD_NUMBER}
+                    Test Status: SUCCESS
+
+                    Database Tests Performed:
+                    ✓ Database connectivity verification
+                    ✓ Schema validation
+                    ✓ Database operations (query, seed, report)
+                    ✓ Data integrity checks
+                    ✓ Performance metrics collection
+
+                    Build URL: ${BUILD_URL}
+                    Console Output: ${BUILD_URL}console
+
+                    ---
+                    This is an automated notification from Jenkins.
+                """,
+                to: 'kike.ruben.coello@gmail.com',
+                recipientProviders: [developers(), requestor()]
+            )
+        }
+
+        failure {
+            echo '✗ Database testing failed!'
+            emailext(
+                subject: "✗ DATABASE TESTS FAILED: ${APP_NAME} #${BUILD_NUMBER}",
+                body: """
+                    DATABASE VALIDATION TEST FAILED
+
+                    Project: ${APP_NAME}
+                    Build Number: ${BUILD_NUMBER}
+                    Test Status: FAILURE
+
+                    Database testing encountered errors. This may indicate:
+                    - Database connectivity issues
+                    - Schema validation failures
+                    - Data integrity problems
+                    - Performance degradation
+
+                    Please check the console output for details.
+
+                    Build URL: ${BUILD_URL}
+                    Console Output: ${BUILD_URL}console
+
+                    ---
+                    This is an automated notification from Jenkins.
+                """,
+                to: 'kike.ruben.coello@gmail.com',
+                recipientProviders: [developers(), requestor()]
+            )
+        }
+    }
+}

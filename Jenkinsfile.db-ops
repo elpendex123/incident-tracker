@@ -97,10 +97,76 @@ pipeline {
     post {
         success {
             echo "✓ Database operation '${params.ACTION}' completed successfully!"
+            emailext(
+                subject: "✓ DATABASE OPERATION SUCCESS: ${params.ACTION} #${BUILD_NUMBER}",
+                body: """
+                    DATABASE OPERATION COMPLETED SUCCESSFULLY
+
+                    Project: incident-tracker
+                    Build Number: ${BUILD_NUMBER}
+                    Operation: ${params.ACTION}
+                    Status: SUCCESS
+
+                    Operation Details:
+                    - Action: ${params.ACTION}
+                    - Query Type: ${params.QUERY_TYPE}
+                    - Seed Count: ${params.SEED_COUNT}
+                    - Cleanup Days: ${params.CLEANUP_DAYS}
+                    - Report Output: ${params.REPORT_OUTPUT}
+
+                    Database Connection:
+                    - Host: ${DB_HOST}
+                    - Port: ${DB_PORT}
+                    - Database: ${DB_NAME}
+                    - User: ${DB_USER}
+
+                    Build URL: ${BUILD_URL}
+                    Console Output: ${BUILD_URL}console
+
+                    ---
+                    This is an automated notification from Jenkins.
+                """,
+                to: 'kike.ruben.coello@gmail.com',
+                recipientProviders: [developers(), requestor()]
+            )
         }
 
         failure {
             echo "✗ Database operation '${params.ACTION}' failed!"
+            emailext(
+                subject: "✗ DATABASE OPERATION FAILED: ${params.ACTION} #${BUILD_NUMBER}",
+                body: """
+                    DATABASE OPERATION FAILED
+
+                    Project: incident-tracker
+                    Build Number: ${BUILD_NUMBER}
+                    Operation: ${params.ACTION}
+                    Status: FAILURE
+
+                    Operation Details:
+                    - Action: ${params.ACTION}
+                    - Query Type: ${params.QUERY_TYPE}
+                    - Seed Count: ${params.SEED_COUNT}
+                    - Cleanup Days: ${params.CLEANUP_DAYS}
+                    - Report Output: ${params.REPORT_OUTPUT}
+
+                    Database Connection:
+                    - Host: ${DB_HOST}
+                    - Port: ${DB_PORT}
+                    - Database: ${DB_NAME}
+                    - User: ${DB_USER}
+
+                    Please check the console output for error details.
+
+                    Build URL: ${BUILD_URL}
+                    Console Output: ${BUILD_URL}console
+
+                    ---
+                    This is an automated notification from Jenkins.
+                """,
+                to: 'kike.ruben.coello@gmail.com',
+                recipientProviders: [developers(), requestor()]
+            )
         }
 
         always {

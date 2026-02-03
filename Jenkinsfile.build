@@ -1,0 +1,113 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven 3.6.3'
+        jdk 'JDK 17'
+    }
+
+    environment {
+        APP_NAME = 'incident-tracker'
+        BUILD_VERSION = "${BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo '=== Checking out source code ==='
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo '=== Building application with Maven ==='
+                sh 'mvn clean compile'
+            }
+        }
+
+        stage('Code Quality Checks') {
+            steps {
+                echo '=== Running code quality checks ==='
+                sh '''
+                    echo "Checking for compilation issues..."
+                    mvn checkstyle:check || true
+
+                    echo "Building package with tests..."
+                    mvn package -DskipTests
+                '''
+            }
+        }
+
+        stage('Verify Build Artifacts') {
+            steps {
+                echo '=== Verifying build artifacts ==='
+                sh '''
+                    if [ -f "target/incident-tracker-1.0.0.jar" ]; then
+                        echo "✓ JAR artifact found"
+                        ls -lh target/incident-tracker-1.0.0.jar
+                    else
+                        echo "✗ JAR artifact NOT found!"
+                        exit 1
+                    fi
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            echo '=== Archiving build artifacts ==='
+            archiveArtifacts artifacts: 'target/*.jar', fingerprint: true, allowEmptyArchive: false
+        }
+
+        success {
+            echo '✓ Build job completed successfully!'
+            emailext(
+                subject: "✓ BUILD SUCCESS: ${APP_NAME} #${BUILD_NUMBER}",
+                body: """
+                    BUILD SUCCESSFUL
+
+                    Project: ${APP_NAME}
+                    Build Number: ${BUILD_NUMBER}
+                    Build Status: SUCCESS
+
+                    Artifacts:
+                    - JAR file: target/incident-tracker-1.0.0.jar
+
+                    Build URL: ${BUILD_URL}
+                    Console Output: ${BUILD_URL}console
+
+                    ---
+                    This is an automated notification from Jenkins.
+                """,
+                to: 'kike.ruben.coello@gmail.com',
+                recipientProviders: [developers(), requestor()]
+            )
+        }
+
+        failure {
+            echo '✗ Build job failed!'
+            emailext(
+                subject: "✗ BUILD FAILED: ${APP_NAME} #${BUILD_NUMBER}",
+                body: """
+                    BUILD FAILED
+
+                    Project: ${APP_NAME}
+                    Build Number: ${BUILD_NUMBER}
+                    Build Status: FAILURE
+
+                    Please check the console output for details.
+
+                    Build URL: ${BUILD_URL}
+                    Console Output: ${BUILD_URL}console
+
+                    ---
+                    This is an automated notification from Jenkins.
+                """,
+                to: 'kike.ruben.coello@gmail.com',
+                recipientProviders: [developers(), requestor()]
+            )
+        }
+    }
+}

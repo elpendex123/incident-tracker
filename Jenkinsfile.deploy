@@ -1,0 +1,314 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven 3.6.3'
+        jdk 'JDK 17'
+    }
+
+    environment {
+        APP_NAME = 'incident-tracker'
+        APP_PORT = '8081'
+        DEPLOY_DIR = '/opt/incident-tracker'
+        LOG_DIR = '/var/log/incident-tracker'
+        DB_HOST = 'localhost'
+        DB_PORT = '5432'
+        DB_NAME = 'incidents'
+        DB_USER = 'postgres'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo '=== Checking out source code ==='
+                checkout scm
+            }
+        }
+
+        stage('Build Application') {
+            steps {
+                echo '=== Building application for deployment ==='
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Run Unit Tests') {
+            steps {
+                echo '=== Running unit tests ==='
+                sh 'mvn test'
+            }
+        }
+
+        stage('Prepare Deployment Environment') {
+            steps {
+                echo '=== Preparing deployment environment ==='
+                sh '''
+                    echo "Creating deployment directories..."
+                    mkdir -p logs
+
+                    echo "Checking if application is already running..."
+                    if pgrep -f 'incident-tracker' > /dev/null; then
+                        echo "✓ Found existing application process"
+                    else
+                        echo "✓ No existing process found"
+                    fi
+                '''
+            }
+        }
+
+        stage('Stop Existing Application') {
+            steps {
+                echo '=== Stopping existing application (if running) ==='
+                sh '''
+                    echo "Attempting to stop current application..."
+                    if [ -f "app.pid" ]; then
+                        PID=$(cat app.pid)
+                        if kill -0 $PID 2>/dev/null; then
+                            echo "Stopping process $PID..."
+                            kill $PID
+                            sleep 2
+                            if kill -0 $PID 2>/dev/null; then
+                                echo "Force killing process $PID..."
+                                kill -9 $PID
+                            fi
+                            echo "✓ Application stopped"
+                        fi
+                    else
+                        pkill -f 'incident-tracker' || true
+                        sleep 2
+                        echo "✓ Killed any remaining incident-tracker processes"
+                    fi
+                '''
+            }
+        }
+
+        stage('Deploy Application') {
+            steps {
+                echo '=== Deploying application ==='
+                sh '''
+                    echo "Deploying JAR file..."
+                    mkdir -p logs
+
+                    # Start application in background
+                    nohup java -jar target/incident-tracker-1.0.0.jar > logs/app.log 2>&1 &
+                    echo $! > app.pid
+
+                    echo "Application started with PID: $(cat app.pid)"
+                    echo "Waiting for application to start..."
+                    sleep 5
+                '''
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                echo '=== Performing health checks ==='
+                script {
+                    timeout(time: 2, unit: 'MINUTES') {
+                        waitUntil {
+                            script {
+                                def response = sh(
+                                    script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:${APP_PORT}/actuator/health',
+                                    returnStdout: true
+                                ).trim()
+
+                                if (response == '200') {
+                                    echo '✓ Application is healthy!'
+                                    return true
+                                } else {
+                                    echo "Health check returned: ${response}, retrying..."
+                                    return false
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Verify API Endpoints') {
+            steps {
+                echo '=== Verifying API endpoints ==='
+                sh '''
+                    echo "Verifying REST API endpoint..."
+                    REST_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${APP_PORT}/api/incidents)
+                    if [ "$REST_RESPONSE" == "200" ]; then
+                        echo "✓ REST API endpoint working (HTTP 200)"
+                    else
+                        echo "✗ REST API endpoint failed (HTTP $REST_RESPONSE)"
+                        exit 1
+                    fi
+
+                    echo ""
+                    echo "Verifying GraphQL endpoint..."
+                    GRAPHQL_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${APP_PORT}/graphql)
+                    if [ "$GRAPHQL_RESPONSE" == "200" ] || [ "$GRAPHQL_RESPONSE" == "400" ]; then
+                        echo "✓ GraphQL endpoint responding (HTTP $GRAPHQL_RESPONSE)"
+                    else
+                        echo "✗ GraphQL endpoint failed (HTTP $GRAPHQL_RESPONSE)"
+                        exit 1
+                    fi
+
+                    echo ""
+                    echo "Verifying Swagger UI..."
+                    SWAGGER_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${APP_PORT}/swagger-ui.html)
+                    if [ "$SWAGGER_RESPONSE" == "200" ]; then
+                        echo "✓ Swagger UI accessible (HTTP 200)"
+                    else
+                        echo "✗ Swagger UI failed (HTTP $SWAGGER_RESPONSE)"
+                        exit 1
+                    fi
+
+                    echo ""
+                    echo "Verifying GraphiQL..."
+                    GRAPHIQL_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${APP_PORT}/graphiql)
+                    if [ "$GRAPHIQL_RESPONSE" == "200" ]; then
+                        echo "✓ GraphiQL accessible (HTTP 200)"
+                    else
+                        echo "✗ GraphiQL failed (HTTP $GRAPHIQL_RESPONSE)"
+                        exit 1
+                    fi
+                '''
+            }
+        }
+
+        stage('Verify Database Connection') {
+            steps {
+                echo '=== Verifying database connection ==='
+                sh '''
+                    echo "Checking if application can access database..."
+
+                    # Test by creating an incident via API
+                    RESPONSE=$(curl -s -w "\n%{http_code}" -X POST http://localhost:${APP_PORT}/api/incidents \
+                        -H "Content-Type: application/json" \
+                        -d '{
+                            "title": "Deployment Verification Test",
+                            "description": "Verifying database connectivity",
+                            "priority": "LOW",
+                            "assignee": "deployment-test"
+                        }')
+
+                    HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+                    if [ "$HTTP_CODE" == "201" ] || [ "$HTTP_CODE" == "200" ]; then
+                        echo "✓ Database connection verified (HTTP $HTTP_CODE)"
+                    else
+                        echo "✗ Database connection failed (HTTP $HTTP_CODE)"
+                        exit 1
+                    fi
+                '''
+            }
+        }
+
+        stage('Generate Deployment Report') {
+            steps {
+                echo '=== Generating deployment report ==='
+                sh '''
+                    {
+                        echo "====================================="
+                        echo "Deployment Report"
+                        echo "====================================="
+                        echo ""
+                        echo "Timestamp: $(date)"
+                        echo "Application: ${APP_NAME}"
+                        echo "Version: 1.0.0"
+                        echo "Port: ${APP_PORT}"
+                        echo "PID: $(cat app.pid)"
+                        echo ""
+                        echo "Status: DEPLOYED"
+                        echo ""
+                        echo "Application Endpoints:"
+                        echo "- REST API: http://localhost:${APP_PORT}/api/incidents"
+                        echo "- GraphQL: http://localhost:${APP_PORT}/graphql"
+                        echo "- GraphiQL: http://localhost:${APP_PORT}/graphiql"
+                        echo "- Swagger UI: http://localhost:${APP_PORT}/swagger-ui.html"
+                        echo "- Health: http://localhost:${APP_PORT}/actuator/health"
+                        echo ""
+                        echo "Log File: logs/app.log"
+                        echo "====================================="
+                    } | tee deployment_report.txt
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            echo '=== Archiving deployment artifacts ==='
+            sh '''
+                if [ -f "logs/app.log" ]; then
+                    head -n 50 logs/app.log > app_log_head.txt
+                fi
+            '''
+            archiveArtifacts artifacts: '*.txt,logs/*.log', fingerprint: true, allowEmptyArchive: true
+        }
+
+        success {
+            echo '✓ Deployment completed successfully!'
+            emailext(
+                subject: "✓ DEPLOYMENT SUCCESSFUL: ${APP_NAME} #${BUILD_NUMBER}",
+                body: """
+                    DEPLOYMENT SUCCESSFUL
+
+                    Project: ${APP_NAME}
+                    Build Number: ${BUILD_NUMBER}
+                    Deployment Status: SUCCESS
+
+                    Application is now running on http://localhost:${APP_PORT}
+
+                    Available Endpoints:
+                    - REST API: http://localhost:${APP_PORT}/api/incidents
+                    - GraphQL: http://localhost:${APP_PORT}/graphql
+                    - GraphiQL UI: http://localhost:${APP_PORT}/graphiql
+                    - Swagger UI: http://localhost:${APP_PORT}/swagger-ui.html
+                    - Health Check: http://localhost:${APP_PORT}/actuator/health
+
+                    All verification checks passed:
+                    ✓ Application health check
+                    ✓ REST API endpoint
+                    ✓ GraphQL endpoint
+                    ✓ Swagger UI accessible
+                    ✓ GraphiQL UI accessible
+                    ✓ Database connection verified
+
+                    Build URL: ${BUILD_URL}
+                    Console Output: ${BUILD_URL}console
+
+                    ---
+                    This is an automated notification from Jenkins.
+                """,
+                to: 'kike.ruben.coello@gmail.com',
+                recipientProviders: [developers(), requestor()]
+            )
+        }
+
+        failure {
+            echo '✗ Deployment failed!'
+            emailext(
+                subject: "✗ DEPLOYMENT FAILED: ${APP_NAME} #${BUILD_NUMBER}",
+                body: """
+                    DEPLOYMENT FAILED
+
+                    Project: ${APP_NAME}
+                    Build Number: ${BUILD_NUMBER}
+                    Deployment Status: FAILURE
+
+                    Deployment encountered an error during one of the following stages:
+                    - Application startup
+                    - Health verification
+                    - Endpoint verification
+                    - Database connectivity check
+
+                    Please check the console output for details and take corrective action.
+
+                    Build URL: ${BUILD_URL}
+                    Console Output: ${BUILD_URL}console
+
+                    ---
+                    This is an automated notification from Jenkins.
+                """,
+                to: 'kike.ruben.coello@gmail.com',
+                recipientProviders: [developers(), requestor()]
+            )
+        }
+    }
+}

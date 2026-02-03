@@ -1,0 +1,287 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven 3.6.3'
+        jdk 'JDK 17'
+    }
+
+    environment {
+        APP_NAME = 'incident-tracker'
+        APP_URL = 'http://localhost:8081'
+        DB_HOST = 'localhost'
+        DB_PORT = '5432'
+        DB_NAME = 'incidents'
+        DB_USER = 'postgres'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo '=== Checking out source code ==='
+                checkout scm
+            }
+        }
+
+        stage('Build Application') {
+            steps {
+                echo '=== Building application for REST testing ==='
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Start Application') {
+            steps {
+                echo '=== Starting application for REST testing ==='
+                sh '''
+                    # Stop any existing process
+                    pkill -f 'incident-tracker' || true
+                    sleep 2
+
+                    # Create logs directory
+                    mkdir -p logs
+
+                    # Start application in background
+                    nohup java -jar target/incident-tracker-1.0.0.jar > logs/app.log 2>&1 &
+                    echo $! > app.pid
+                    sleep 5
+                '''
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                echo '=== Verifying application health ==='
+                script {
+                    timeout(time: 2, unit: 'MINUTES') {
+                        waitUntil {
+                            script {
+                                def response = sh(
+                                    script: 'curl -s -o /dev/null -w "%{http_code}" ${APP_URL}/actuator/health',
+                                    returnStdout: true
+                                ).trim()
+
+                                if (response == '200') {
+                                    echo '✓ Application is healthy!'
+                                    return true
+                                } else {
+                                    echo "Health check returned: ${response}"
+                                    return false
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Test REST Endpoints') {
+            steps {
+                echo '=== Testing REST API endpoints ==='
+                sh '''
+                    echo "========================================="
+                    echo "REST API Test Suite"
+                    echo "========================================="
+
+                    TEST_RESULTS=""
+                    FAILED_TESTS=0
+                    PASSED_TESTS=0
+
+                    # Test 1: GET /api/incidents (List all incidents)
+                    echo ""
+                    echo "[1/6] Testing GET /api/incidents..."
+                    RESPONSE=$(curl -s -w "\n%{http_code}" ${APP_URL}/api/incidents)
+                    HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+                    if [ "$HTTP_CODE" == "200" ]; then
+                        echo "✓ GET /api/incidents: SUCCESS (HTTP 200)"
+                        PASSED_TESTS=$((PASSED_TESTS + 1))
+                    else
+                        echo "✗ GET /api/incidents: FAILED (HTTP $HTTP_CODE)"
+                        FAILED_TESTS=$((FAILED_TESTS + 1))
+                    fi
+
+                    # Test 2: POST /api/incidents (Create incident)
+                    echo ""
+                    echo "[2/6] Testing POST /api/incidents..."
+                    RESPONSE=$(curl -s -w "\n%{http_code}" -X POST ${APP_URL}/api/incidents \
+                        -H "Content-Type: application/json" \
+                        -d '{
+                            "title": "Test Incident from REST API",
+                            "description": "Testing REST endpoint",
+                            "priority": "HIGH",
+                            "assignee": "test-user"
+                        }')
+                    HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+                    if [ "$HTTP_CODE" == "201" ] || [ "$HTTP_CODE" == "200" ]; then
+                        echo "✓ POST /api/incidents: SUCCESS (HTTP $HTTP_CODE)"
+                        PASSED_TESTS=$((PASSED_TESTS + 1))
+                        # Extract incident ID for later tests
+                        INCIDENT_ID=$(echo "$RESPONSE" | head -n -1 | jq -r '.id // .id' 2>/dev/null || echo "1")
+                    else
+                        echo "✗ POST /api/incidents: FAILED (HTTP $HTTP_CODE)"
+                        FAILED_TESTS=$((FAILED_TESTS + 1))
+                        INCIDENT_ID="1"
+                    fi
+
+                    # Test 3: GET /api/incidents/{id} (Get specific incident)
+                    echo ""
+                    echo "[3/6] Testing GET /api/incidents/{id}..."
+                    RESPONSE=$(curl -s -w "\n%{http_code}" ${APP_URL}/api/incidents/${INCIDENT_ID})
+                    HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+                    if [ "$HTTP_CODE" == "200" ]; then
+                        echo "✓ GET /api/incidents/{id}: SUCCESS (HTTP 200)"
+                        PASSED_TESTS=$((PASSED_TESTS + 1))
+                    else
+                        echo "✗ GET /api/incidents/{id}: FAILED (HTTP $HTTP_CODE)"
+                        FAILED_TESTS=$((FAILED_TESTS + 1))
+                    fi
+
+                    # Test 4: PUT /api/incidents/{id} (Update incident)
+                    echo ""
+                    echo "[4/6] Testing PUT /api/incidents/{id}..."
+                    RESPONSE=$(curl -s -w "\n%{http_code}" -X PUT ${APP_URL}/api/incidents/${INCIDENT_ID} \
+                        -H "Content-Type: application/json" \
+                        -d '{
+                            "title": "Updated Test Incident",
+                            "description": "Updated via REST API",
+                            "priority": "CRITICAL",
+                            "assignee": "updated-user"
+                        }')
+                    HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+                    if [ "$HTTP_CODE" == "200" ]; then
+                        echo "✓ PUT /api/incidents/{id}: SUCCESS (HTTP 200)"
+                        PASSED_TESTS=$((PASSED_TESTS + 1))
+                    else
+                        echo "✗ PUT /api/incidents/{id}: FAILED (HTTP $HTTP_CODE)"
+                        FAILED_TESTS=$((FAILED_TESTS + 1))
+                    fi
+
+                    # Test 5: PATCH /api/incidents/{id}/status (Update status)
+                    echo ""
+                    echo "[5/6] Testing PATCH /api/incidents/{id}/status..."
+                    RESPONSE=$(curl -s -w "\n%{http_code}" -X PATCH ${APP_URL}/api/incidents/${INCIDENT_ID}/status \
+                        -H "Content-Type: application/json" \
+                        -d '"IN_PROGRESS"')
+                    HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+                    if [ "$HTTP_CODE" == "200" ]; then
+                        echo "✓ PATCH /api/incidents/{id}/status: SUCCESS (HTTP 200)"
+                        PASSED_TESTS=$((PASSED_TESTS + 1))
+                    else
+                        echo "✗ PATCH /api/incidents/{id}/status: FAILED (HTTP $HTTP_CODE)"
+                        FAILED_TESTS=$((FAILED_TESTS + 1))
+                    fi
+
+                    # Test 6: DELETE /api/incidents/{id} (Delete incident)
+                    echo ""
+                    echo "[6/6] Testing DELETE /api/incidents/{id}..."
+                    RESPONSE=$(curl -s -w "\n%{http_code}" -X DELETE ${APP_URL}/api/incidents/${INCIDENT_ID})
+                    HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+                    if [ "$HTTP_CODE" == "200" ] || [ "$HTTP_CODE" == "204" ]; then
+                        echo "✓ DELETE /api/incidents/{id}: SUCCESS (HTTP $HTTP_CODE)"
+                        PASSED_TESTS=$((PASSED_TESTS + 1))
+                    else
+                        echo "✗ DELETE /api/incidents/{id}: FAILED (HTTP $HTTP_CODE)"
+                        FAILED_TESTS=$((FAILED_TESTS + 1))
+                    fi
+
+                    # Summary
+                    echo ""
+                    echo "========================================="
+                    echo "Test Results Summary"
+                    echo "========================================="
+                    echo "Passed: $PASSED_TESTS/6"
+                    echo "Failed: $FAILED_TESTS/6"
+                    echo "========================================="
+
+                    if [ $FAILED_TESTS -gt 0 ]; then
+                        echo "✗ Some tests failed!"
+                        exit 1
+                    fi
+                '''
+            }
+        }
+
+        stage('Verify Swagger UI') {
+            steps {
+                echo '=== Verifying Swagger UI documentation ==='
+                sh '''
+                    RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" ${APP_URL}/swagger-ui.html)
+                    if [ "$RESPONSE" == "200" ]; then
+                        echo "✓ Swagger UI is accessible (HTTP 200)"
+                    else
+                        echo "✗ Swagger UI is NOT accessible (HTTP $RESPONSE)"
+                        exit 1
+                    fi
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            echo '=== Stopping application ==='
+            sh '''
+                if [ -f "app.pid" ]; then
+                    kill $(cat app.pid) 2>/dev/null || true
+                fi
+                pkill -f 'incident-tracker' || true
+            '''
+            archiveArtifacts artifacts: 'logs/*.log', fingerprint: false, allowEmptyArchive: true
+        }
+
+        success {
+            echo '✓ REST API testing completed successfully!'
+            emailext(
+                subject: "✓ REST API TESTS PASSED: ${APP_NAME} #${BUILD_NUMBER}",
+                body: """
+                    REST API TEST SUITE PASSED
+
+                    Project: ${APP_NAME}
+                    Build Number: ${BUILD_NUMBER}
+                    Test Status: SUCCESS
+
+                    All 6 REST API endpoints tested:
+                    ✓ GET /api/incidents
+                    ✓ POST /api/incidents
+                    ✓ GET /api/incidents/{id}
+                    ✓ PUT /api/incidents/{id}
+                    ✓ PATCH /api/incidents/{id}/status
+                    ✓ DELETE /api/incidents/{id}
+
+                    Build URL: ${BUILD_URL}
+                    Console Output: ${BUILD_URL}console
+
+                    ---
+                    This is an automated notification from Jenkins.
+                """,
+                to: 'kike.ruben.coello@gmail.com',
+                recipientProviders: [developers(), requestor()]
+            )
+        }
+
+        failure {
+            echo '✗ REST API testing failed!'
+            emailext(
+                subject: "✗ REST API TESTS FAILED: ${APP_NAME} #${BUILD_NUMBER}",
+                body: """
+                    REST API TEST SUITE FAILED
+
+                    Project: ${APP_NAME}
+                    Build Number: ${BUILD_NUMBER}
+                    Test Status: FAILURE
+
+                    One or more REST API endpoints failed during testing.
+                    Please check the console output for details.
+
+                    Build URL: ${BUILD_URL}
+                    Console Output: ${BUILD_URL}console
+
+                    ---
+                    This is an automated notification from Jenkins.
+                """,
+                to: 'kike.ruben.coello@gmail.com',
+                recipientProviders: [developers(), requestor()]
+            )
+        }
+    }
+}
