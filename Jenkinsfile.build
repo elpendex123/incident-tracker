@@ -26,16 +26,10 @@ pipeline {
             }
         }
 
-        stage('Code Quality Checks') {
+        stage('Package Build') {
             steps {
-                echo '=== Running code quality checks ==='
-                sh '''
-                    echo "Checking for compilation issues..."
-                    mvn checkstyle:check || true
-
-                    echo "Building package with tests..."
-                    mvn package -DskipTests
-                '''
+                echo '=== Building package ==='
+                sh 'mvn package -DskipTests'
             }
         }
 
@@ -82,7 +76,7 @@ pipeline {
                     This is an automated notification from Jenkins.
                 """,
                 to: 'kike.ruben.coello@gmail.com',
-                recipientProviders: [developers(), requestor()]
+                // recipientProviders: [developers(), requestor()]
             )
         }
 
@@ -106,7 +100,7 @@ pipeline {
                     This is an automated notification from Jenkins.
                 """,
                 to: 'kike.ruben.coello@gmail.com',
-                recipientProviders: [developers(), requestor()]
+                // recipientProviders: [developers(), requestor()]
             )
         }
     }
