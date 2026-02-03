@@ -38,10 +38,9 @@ pipeline {
         stage('Test Database Connectivity') {
             steps {
                 echo '=== Testing database connectivity ==='
-                sh '''
-                    echo "Testing PostgreSQL connection..."
-
-                    withCredentials([string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
+                withCredentials([string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
+                    sh '''
+                        echo "Testing PostgreSQL connection..."
                         PGPASSWORD="${DB_PASSWORD}" psql -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER} -d ${DB_NAME} -c "SELECT version();" 2>/dev/null
 
                         if [ $? -eq 0 ]; then
@@ -50,16 +49,16 @@ pipeline {
                             echo "✗ Database connection failed"
                             exit 1
                         fi
-                    }
-                '''
+                    '''
+                }
             }
         }
 
         stage('Validate Database Schema') {
             steps {
                 echo '=== Validating database schema ==='
-                sh '''
-                    withCredentials([string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
+                withCredentials([string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
+                    sh '''
                         echo "Checking database schema..."
 
                         # Check if incidents table exists
@@ -75,18 +74,18 @@ pipeline {
                         echo ""
                         echo "Available tables in database:"
                         PGPASSWORD="${DB_PASSWORD}" psql -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER} -d ${DB_NAME} -c "\dt" 2>/dev/null || true
-                    }
-                '''
+                    '''
+                }
             }
         }
 
         stage('Test Database Operations via Python') {
             steps {
                 echo '=== Testing database operations via Python script ==='
-                sh '''
-                    cd scripts
+                withCredentials([string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
+                    sh '''
+                        cd scripts
 
-                    withCredentials([string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
                         echo "Testing database operations..."
 
                         # Test query operation
@@ -135,16 +134,16 @@ pipeline {
                         else
                             echo "✗ Report generation failed"
                         fi
-                    }
-                '''
+                    '''
+                }
             }
         }
 
         stage('Test Data Integrity') {
             steps {
                 echo '=== Testing data integrity ==='
-                sh '''
-                    withCredentials([string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
+                withCredentials([string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
+                    sh '''
                         echo "Running data integrity checks..."
 
                         # Check for NULL constraints
@@ -155,16 +154,16 @@ pipeline {
                         # Test transaction integrity
                         echo ""
                         echo "✓ Transaction integrity verified"
-                    }
-                '''
+                    '''
+                }
             }
         }
 
         stage('Performance Metrics') {
             steps {
                 echo '=== Collecting database performance metrics ==='
-                sh '''
-                    withCredentials([string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
+                withCredentials([string(credentialsId: 'db-password', variable: 'DB_PASSWORD')]) {
+                    sh '''
                         echo "Collecting database statistics..."
 
                         # Database size
@@ -181,8 +180,8 @@ pipeline {
                         echo ""
                         echo "PostgreSQL Version:"
                         PGPASSWORD="${DB_PASSWORD}" psql -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER} -d ${DB_NAME} -c "SELECT version();" 2>/dev/null || echo "⚠ Version check skipped"
-                    }
-                '''
+                    '''
+                }
             }
         }
     }
@@ -223,7 +222,7 @@ pipeline {
                     This is an automated notification from Jenkins.
                 """,
                 to: 'kike.ruben.coello@gmail.com',
-                recipientProviders: [developers(), requestor()]
+                // recipientProviders: [developers(), requestor()]
             )
         }
 
@@ -253,7 +252,7 @@ pipeline {
                     This is an automated notification from Jenkins.
                 """,
                 to: 'kike.ruben.coello@gmail.com',
-                recipientProviders: [developers(), requestor()]
+                // recipientProviders: [developers(), requestor()]
             )
         }
     }
