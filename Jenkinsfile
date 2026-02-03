@@ -13,6 +13,7 @@ pipeline {
         DB_PORT = '5432'
         DB_NAME = 'incidents'
         DB_USER = 'postgres'
+        BUILD_VERSION = "${BUILD_NUMBER}"
     }
 
     options {
