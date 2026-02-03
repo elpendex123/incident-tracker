@@ -409,7 +409,7 @@ pipeline {
                     This is an automated notification from Jenkins.
                 """,
                 to: 'kike.ruben.coello@gmail.com',
-                recipientProviders: [developers(), requestor()]
+                // recipientProviders: [developers(), requestor()]
             )
         }
 
@@ -445,7 +445,7 @@ pipeline {
                     This is an automated notification from Jenkins.
                 """,
                 to: 'kike.ruben.coello@gmail.com',
-                recipientProviders: [developers(), requestor()]
+                // recipientProviders: [developers(), requestor()]
             )
         }
     }

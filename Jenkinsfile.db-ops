@@ -50,10 +50,11 @@ pipeline {
 
         stage('Setup Python') {
             steps {
-                echo '=== Installing Python dependencies ==='
+                echo '=== Setting up Python dependencies ==='
                 sh '''
                     cd scripts
-                    python3 -m pip install --user -r requirements.txt
+                    echo "Checking if Python dependencies are installed..."
+                    python3 -m pip list --quiet 2>/dev/null | grep -q psycopg2 && echo "✓ Dependencies already installed" || (echo "Installing dependencies..." && python3 -m pip install --user -r requirements.txt)
                 '''
             }
         }
@@ -127,7 +128,7 @@ pipeline {
                     This is an automated notification from Jenkins.
                 """,
                 to: 'kike.ruben.coello@gmail.com',
-                recipientProviders: [developers(), requestor()]
+                // recipientProviders: [developers(), requestor()]
             )
         }
 
@@ -165,7 +166,7 @@ pipeline {
                     This is an automated notification from Jenkins.
                 """,
                 to: 'kike.ruben.coello@gmail.com',
-                recipientProviders: [developers(), requestor()]
+                // recipientProviders: [developers(), requestor()]
             )
         }
 
